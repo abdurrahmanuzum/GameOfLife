@@ -9,8 +9,11 @@
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 
-const int WINDOW_WIDTH = 700;
-const int WINDOW_HEIGHT = 700;
+extern const int WINDOW_WIDTH;
+extern const int WINDOW_HEIGHT;
+
+extern const int POPULATION;
+
 
 enum class Color { WHITE, BLACK, RED, GREEN, BLUE };
 
