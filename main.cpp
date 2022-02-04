@@ -44,19 +44,46 @@ void update( unsigned char** cells, int size_x, int size_y, SDL_Rect unit_rect )
 	}
 }
 
-void update2( unsigned char** cells, int size_x, int size_y )
+void update2( unsigned char** cells, int size )
 {
-	for ( int j = 1; j < size_y+1; j++ )
-	{
-		for ( int i = 1; i < size_x+1; i++ )
-		{
-			//printf( "%d ", cells[i][j] );
+	unsigned char* prev_col = nullptr;
+	unsigned char* curr_col = nullptr;
+	unsigned char* next_col = nullptr;
+	
+	prev_col = (unsigned char*)malloc( sizeof(cells[0]) );
+	curr_col = (unsigned char*)malloc( sizeof(cells[0]) );
+	next_col = (unsigned char*)malloc( sizeof(cells[0]) );
 
-			int neighbours = cells[i+1][j] + cells[i+1][j+1] + cells[i][j+1] + cells[i-1][j+1] + cells[i-1][j] + cells[i-1][j-1] + cells[i][j-1] + cells[i+1][j-1];	
-			
-			cells[i][j] = neighbours;
+	memcpy( prev_col, cells[0], size+2 );
+	memcpy( curr_col, cells[1], size+2 );
+	memcpy( next_col, cells[2], size+2 );
+	
+
+	
+	for ( int i = 1; i < size+1; i++ )
+	{
+		for ( int j = 1; j < size+1; j++ )
+		{
+			int neighbours	= prev_col[j-1] + curr_col[j-1] + next_col[j-1]
+							+ prev_col[j]					+ next_col[j] 						
+							+ prev_col[j+1] + curr_col[j+1] + next_col[j+1];
+
+			if ( neighbours < 2 || neighbours > 3 )
+			{
+				cells[i][j] = 0;
+			}
+			else if ( neighbours == 3 )
+			{
+				cells[i][j] = 1;
+			}
 		}
-		//printf("\n");
+
+		if ( i+2 < size+2 )
+		{
+			memcpy( prev_col, curr_col, size+2 );
+			memcpy( curr_col, next_col, size+2 );
+			memcpy( next_col, cells[i+2], size+2 );
+		}
 	}
 }
 
@@ -90,12 +117,12 @@ int main ( int argc, char** argv )
 
 	
 
-	unsigned char** cells;
+	unsigned char** cells = nullptr;
 
 	cells = (unsigned char**)malloc( (POPULATION+2) * sizeof(*cells) );
 	for ( int i = 0; i < (POPULATION+2); i++ )
 	{
-		cells[i] = (unsigned char*)malloc( (POPULATION+2) * sizeof cells[0] );
+		cells[i] = (unsigned char*)malloc( (POPULATION+2) * sizeof(cells[0]) );
 	}
 
 	for ( int j = 0; j < (POPULATION+2); j++ )
@@ -111,13 +138,12 @@ int main ( int argc, char** argv )
 
 	cells[5][5] = 1;
 	cells[5][6] = 1;
-	cells[6][5] = 1;
-	cells[6][6] = 1;
-
-
-	
+	cells[5][7] = 1;
 	
 
+	printf( "Initial condition map is as follows:\n\n" );
+	print2console( cells, POPULATION+2, POPULATION+2 );
+	system("pause");
 
 
 	bool quit = false;
@@ -133,13 +159,13 @@ int main ( int argc, char** argv )
 			}
 		}
 
-		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
-		SDL_RenderPresent( renderer );
+		//SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
+		//SDL_RenderPresent( renderer );
 
-		SDL_DrawSquareGrid( POPULATION, 0xFFFFFFFF );
-		SDL_RenderPresent( renderer );
+		//SDL_DrawSquareGrid( POPULATION, 0xFFFFFFFF );
+		//SDL_RenderPresent( renderer );
 
-		for ( int i = 0; i <= 1; i++ )
+		for ( int i = 0; i <= 3; i++ )
 		{
 			//printf("\x1B[1;1H\x1B[2J");
 
@@ -147,7 +173,7 @@ int main ( int argc, char** argv )
 
 
 			//update( cells, POPULATION, POPULATION, unit_rect );
-			update2( cells, POPULATION, POPULATION );
+			update2( cells, POPULATION );
 			print2console( cells, POPULATION+2, POPULATION+2 );
 
 			
