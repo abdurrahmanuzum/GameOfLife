@@ -53,11 +53,15 @@ void update( unsigned char** cells, int size )
 	}
 }
 
+<<<<<<< HEAD
 void print_to_console( unsigned char** cells, int size_x, int size_y )
+=======
+void print_to_console( unsigned char** cells, int size )
+>>>>>>> cells
 {
-	for ( int j = 0; j < size_y; j++ )
+	for ( int j = 0; j < size; j++ )
 	{
-		for ( int i = 0; i < size_x; i++ )
+		for ( int i = 0; i < size; i++ )
 		{
 			printf( "%d ", cells[i][j] );
 			
@@ -117,7 +121,7 @@ int main ( int argc, char** argv )
 	
 
 	printf( "Initial condition map is as follows:\n\n" );
-	print2console( cells, POPULATION+2, POPULATION+2 );
+	print_to_console( cells, POPULATION+2 );
 	system("pause");
 
 
@@ -141,7 +145,7 @@ int main ( int argc, char** argv )
 			printf("---------------------------------------------------------------------------------------\n");
 
 			update2( cells, POPULATION );
-			print2console( cells, POPULATION+2, POPULATION+2 );			
+			print_to_console( cells, POPULATION+2 );			
 
 			SDL_Delay(1000);
 		}
