@@ -9,9 +9,6 @@ const int WINDOW_HEIGHT = 700;
 
 const int POPULATION = 20;
 
-bool flag = false;
-
-
 
 
 void update( unsigned char** cells, int size_x, int size_y, SDL_Rect unit_rect )
@@ -47,36 +44,37 @@ void update( unsigned char** cells, int size_x, int size_y, SDL_Rect unit_rect )
 	}
 }
 
-void print2console( unsigned char** cells, int size_x, int size_y )
+void update2( unsigned char** cells, int size_x, int size_y )
 {
-	for ( int j = 1; j < size_y; j++ )
+	for ( int j = 1; j < size_y+1; j++ )
 	{
-		for ( int i = 1; i < size_x; i++ )
+		for ( int i = 1; i < size_x+1; i++ )
 		{
-			printf( "%d ", cells[i][j] );
+			//printf( "%d ", cells[i][j] );
 
 			int neighbours = cells[i+1][j] + cells[i+1][j+1] + cells[i][j+1] + cells[i-1][j+1] + cells[i-1][j] + cells[i-1][j-1] + cells[i][j-1] + cells[i+1][j-1];	
 			
-			if ( neighbours < 2 )
-			{
-				cells[i][j] = 0;
-			}
-			else if ( neighbours > 3 )
-			{
-				cells[i][j] = 0;
-			}
-			else
-			{
-				cells[i][j] = 1;
-			}
+			cells[i][j] = neighbours;
+		}
+		//printf("\n");
+	}
+}
 
+void print2console( unsigned char** cells, int size_x, int size_y )
+{
+	for ( int j = 0; j < size_y; j++ )
+	{
+		for ( int i = 0; i < size_x; i++ )
+		{
+			printf( "%d ", cells[i][j] );
+
+			//int neighbours = cells[i+1][j] + cells[i+1][j+1] + cells[i][j+1] + cells[i-1][j+1] + cells[i-1][j] + cells[i-1][j-1] + cells[i][j-1] + cells[i+1][j-1];	
 			
-
+			
 		}
 		printf("\n");
 	}
 }
-
 
 
 
@@ -149,13 +147,12 @@ int main ( int argc, char** argv )
 
 
 			//update( cells, POPULATION, POPULATION, unit_rect );
-			print2console( cells, POPULATION, POPULATION );
+			update2( cells, POPULATION, POPULATION );
+			print2console( cells, POPULATION+2, POPULATION+2 );
 
 			
 
 			SDL_Delay(1000);
-
-			flag = true;
 		}
 		break;
 	}
