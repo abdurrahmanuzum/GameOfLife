@@ -10,7 +10,7 @@ const int WINDOW_HEIGHT = 700;
 const int POPULATION = 20;
 
 
-void update2( unsigned char** cells, int size )
+void update( unsigned char** cells, int size )
 {
 	unsigned char* prev_col = nullptr;
 	unsigned char* curr_col = nullptr;
@@ -53,13 +53,26 @@ void update2( unsigned char** cells, int size )
 	}
 }
 
-void print2console( unsigned char** cells, int size_x, int size_y )
+void print_to_console( unsigned char** cells, int size_x, int size_y )
 {
 	for ( int j = 0; j < size_y; j++ )
 	{
 		for ( int i = 0; i < size_x; i++ )
 		{
 			printf( "%d ", cells[i][j] );
+			
+		}
+		printf("\n");
+	}
+}
+
+void print_to_window( unsigned char** cells, int size_x, int size_y )
+{
+	for ( int j = 0; j < size_y; j++ )
+	{
+		for ( int i = 0; i < size_x; i++ )
+		{
+			printf( "%d ", cells[i+1][j+1] );
 			
 		}
 		printf("\n");
