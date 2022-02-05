@@ -59,16 +59,16 @@ void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, i
 		return;
 	}
 
-	Uint8 r = color & 0xFF;
-
-	color >>= 8;
-	Uint8 g = color & 0xFF;
+	Uint8 a = color & 0xFF;
 
 	color >>= 8;
 	Uint8 b = color & 0xFF;
 
 	color >>= 8;
-	Uint8 a = color & 0xFF;
+	Uint8 g = color & 0xFF;
+
+	color >>= 8;
+	Uint8 r = color & 0xFF;
 
 	SDL_SetRenderDrawColor( renderer, r, g, b, a );
 

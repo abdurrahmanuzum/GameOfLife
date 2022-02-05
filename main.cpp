@@ -7,8 +7,15 @@ SDL_Renderer* renderer = nullptr;
 const int WINDOW_WIDTH = 700;
 const int WINDOW_HEIGHT = 700;
 
-const int POPULATION = 10;
+const int POPULATION = 20;
 
+struct
+{
+	int x_start_index;
+	int x_end_index;
+	int y_start_index;
+	int y_end_index;
+}Gridmap;
 
 void update_cells( unsigned char** cells, int size )
 {
@@ -54,33 +61,21 @@ void update_cells( unsigned char** cells, int size )
 }
 
 
-void print_to_console( unsigned char** cells, int size )
+int print_to_window( unsigned char** cells, int full_size, int x_start_index, int x_end_index, int y_start_index, int y_end_index, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT )
 {
-	for ( int j = 0; j < size; j++ )
-	{
-		for ( int i = 0; i < size; i++ )
-		{
-			printf( "%d ", cells[i][j] );
-			
-		}
-		printf("\n");
-	}
-}
-
-int print_to_window( unsigned char** cells, int size, int x_start_index, int x_end_index, int y_start_index, int y_end_index, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT )
-{
-	if ( x_start_index < 0 || x_end_index > size || y_start_index < 0 || y_end_index > size )
+	if ( x_start_index < 0 || x_end_index >= full_size || y_start_index < 0 || y_end_index >= full_size )
 	{
 		printf( "On function print_to_window:\n" );
 		printf( "Invalid indecies detected, aborting printing...\n" );
 		return -1;
 	}
 
+
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
 	for ( int j = y_start_index; j < y_end_index; j++ )
 	{
-		for ( int i = x_start_index; i < x_end_index+1; i++ )
+		for ( int i = x_start_index; i < x_end_index; i++ )
 		{
 			unit_rect.x = i * unit_rect.w;
 			unit_rect.y = j * unit_rect.h;
@@ -91,12 +86,17 @@ int print_to_window( unsigned char** cells, int size, int x_start_index, int x_e
 			}
 			else
 			{
-				SDL_RenderDrawRect( renderer, &unit_rect );
+				//SDL_RenderDrawRect( renderer, &unit_rect );
 			}			
 		}
 	}
 }
 
+
+int initialise_cells( unsigned char** cells, int full_size, SDL_Event& event )
+{
+
+}
 
 
 
@@ -126,12 +126,13 @@ int main ( int argc, char** argv )
 		}
 	}
 
-	SDL_Rect unit_rect = { 0, 0, WINDOW_WIDTH/POPULATION, WINDOW_HEIGHT/POPULATION };
+	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 
 
-	cells[5][5] = 1;
-	cells[5][6] = 1;
-	cells[5][7] = 1;
+	cells[2][2] = 1;
+	cells[2][3] = 1;
+	cells[3][2] = 1;
+	cells[3][3] = 1;
 
 
 	bool quit = false;
@@ -153,9 +154,9 @@ int main ( int argc, char** argv )
 		SDL_RenderClear( renderer );
 
 		update_cells( cells, POPULATION );
-		printf("Updated.\n");
-		print_to_window( cells, POPULATION, 0, 10, 0, 10, unit_rect );
-		printf("Printed.\n");
+		print_to_window( cells, POPULATION, 0, POPULATION-1, 0, POPULATION-1, unit_rect );
+
+		SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 		SDL_RenderPresent( renderer );
 
 
