@@ -9,7 +9,8 @@ const int WINDOW_HEIGHT = 700;
 
 const int POPULATION = 20;
 
-struct
+
+typedef struct
 {
 	int x_start_index;
 	int x_end_index;
@@ -61,9 +62,9 @@ void update_cells( unsigned char** cells, int size )
 }
 
 
-int print_to_window( unsigned char** cells, int full_size, int x_start_index, int x_end_index, int y_start_index, int y_end_index, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT )
+int print_to_window( unsigned char** cells, int full_size, Gridmap grid, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT )
 {
-	if ( x_start_index < 0 || x_end_index >= full_size || y_start_index < 0 || y_end_index >= full_size )
+	if ( grid.x_start_index < 0 || grid.x_end_index >= full_size || grid.y_start_index < 0 || grid.y_end_index >= full_size )
 	{
 		printf( "On function print_to_window:\n" );
 		printf( "Invalid indecies detected, aborting printing...\n" );
@@ -73,9 +74,9 @@ int print_to_window( unsigned char** cells, int full_size, int x_start_index, in
 
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
-	for ( int j = y_start_index; j < y_end_index; j++ )
+	for ( int j = grid.y_start_index; j < grid.y_end_index; j++ )
 	{
-		for ( int i = x_start_index; i < x_end_index; i++ )
+		for ( int i = grid.x_start_index; i < grid.x_end_index; i++ )
 		{
 			unit_rect.x = i * unit_rect.w;
 			unit_rect.y = j * unit_rect.h;
@@ -93,10 +94,57 @@ int print_to_window( unsigned char** cells, int full_size, int x_start_index, in
 }
 
 
-int initialise_cells( unsigned char** cells, int full_size, SDL_Event& event )
+int initialise_cells( unsigned char** cells, int full_size, Gridmap grid, SDL_Rect unit_rect, SDL_Event& event )
 {
+	int mouse_x = 0;
+	int mouse_y = 0;
 
+
+	
+
+	if ( event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RETURN )
+	{
+		return 1;
+	}
+	else if ( event.type == SDL_MOUSEBUTTONDOWN )
+	{
+		SDL_GetMouseState( &mouse_x, &mouse_y );
+
+		int i = mouse_x / unit_rect.w;
+		int j = mouse_y / unit_rect.h;
+
+		unit_rect.x = i * unit_rect.w;
+		unit_rect.y = j * unit_rect.h;
+
+		if ( event.button.button == SDL_BUTTON_LEFT )
+		{
+			printf( "The cell: (%d,%d) is set to alive.", 1 + grid.x_start_index + i, 1 + grid.y_start_index + j );
+			cells[ 1 + grid.x_start_index + i ][ 1 + grid.y_start_index + j ] = 1;
+			printf( " Done.\n" );
+
+			SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xff, 0xff );
+			SDL_RenderFillRect( renderer, &unit_rect );
+		}
+		else if ( event.button.button == SDL_BUTTON_RIGHT )
+		{
+			printf( "The cell: (%d,%d) is set to dead.", 1 + grid.x_start_index + i, 1 + grid.y_start_index + j );
+			cells[ 1 + grid.x_start_index + i ][ 1 + grid.y_start_index + j ] = 0;
+			printf( " Done.\n" );
+
+			SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
+			SDL_RenderFillRect( renderer, &unit_rect );
+
+			SDL_SetRenderDrawColor( renderer, 0xAA, 0xAA, 0xAA, 0xFF );
+			SDL_RenderDrawRect( renderer, &unit_rect );
+		}			
+
+		
+		SDL_RenderPresent( renderer );
+	}
+
+	return 0;
 }
+
 
 
 
@@ -129,16 +177,19 @@ int main ( int argc, char** argv )
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 
 
-	cells[2][2] = 1;
+	/*cells[2][2] = 1;
 	cells[2][3] = 1;
 	cells[3][2] = 1;
-	cells[3][3] = 1;
+	cells[3][3] = 1;*/
+
+	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1 };
 
 
 	bool quit = false;
+	bool initialised = false;
 	SDL_Event event;
 
-	SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
+	SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 	SDL_RenderPresent( renderer );
 
 	while ( !quit )
@@ -148,13 +199,23 @@ int main ( int argc, char** argv )
 			if ( event.type == SDL_QUIT )
 			{
 				quit = true;
-			}
+			}			
 		}
+
+		if ( !initialised )
+		{
+			initialised = initialise_cells( cells, POPULATION, grid, unit_rect, event );
+			continue;
+		}
+
+		printf("Actual program started.\n");
+			
+
 		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 		SDL_RenderClear( renderer );
 
 		update_cells( cells, POPULATION );
-		print_to_window( cells, POPULATION, 0, POPULATION-1, 0, POPULATION-1, unit_rect );
+		print_to_window( cells, POPULATION, grid, unit_rect );
 
 		SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 		SDL_RenderPresent( renderer );
