@@ -80,7 +80,7 @@ int print_to_window( unsigned char** cells, int size, int x_start_index, int x_e
 
 	for ( int j = y_start_index; j < y_end_index; j++ )
 	{
-		for ( int i = x_start_index+1; i < x_end_index+1; i++ )
+		for ( int i = x_start_index; i < x_end_index+1; i++ )
 		{
 			unit_rect.x = i * unit_rect.w;
 			unit_rect.y = j * unit_rect.h;
@@ -92,8 +92,7 @@ int print_to_window( unsigned char** cells, int size, int x_start_index, int x_e
 			else
 			{
 				SDL_RenderDrawRect( renderer, &unit_rect );
-			}
-			
+			}			
 		}
 	}
 }
