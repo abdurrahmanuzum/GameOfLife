@@ -16,6 +16,7 @@ extern const int WINDOW_WIDTH;
 extern const int WINDOW_HEIGHT;
 
 extern const int POPULATION;
+extern const int SIZE;
 
 
 enum class Color { WHITE, BLACK, RED, GREEN, BLUE };
