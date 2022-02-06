@@ -2,6 +2,8 @@
 
 Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+2)
 {
+	//TODO: Add proper memory allocation failure handling.
+
 	// Allocate main array
 	cells = (unsigned char**)malloc( FRAMED_SIZE*sizeof(*cells) );
 	if ( cells == NULL )
@@ -29,67 +31,27 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 					cells[i][j] = 0;
 				}
 			}
+
+			// Allocate buffers
+			prev_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
+			curr_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
+			next_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
 		}
-
-
-		prev_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-		curr_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-		next_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-
-
-
-
-
 	}	
 }
 
 
-int Cells::allocate_memory()
+Cells::~Cells()
 {
-	// Allocate main array
-	cells = (unsigned char**)malloc( FRAMED_SIZE*sizeof(*cells) );
-	if ( cells == NULL )
-	{
-		throw -1;
-	}
-
 	for ( int i = 0; i < FRAMED_SIZE; i++ )
 	{
-		cells[i] = (unsigned char*)malloc( FRAMED_SIZE*sizeof(**cells) );
-		if ( cells[i] == NULL )
-		{
-			throw -2;
-		}
+		free( cells[i] );
 	}
+	free( cells );
 
-	// Initialise all cells to be 0, isn't necessary, just a redundant error checking mechanism
-	for ( int i = 0; i < FRAMED_SIZE; i++ )
-	{
-		for ( int j = 0; j < FRAMED_SIZE; j++ )
-		{
-			cells[i][j] = 0;
-		}
-	}
-
-
-	// Allocate buffer memory
-	unsigned char* prev_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-	unsigned char* curr_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-	unsigned char* next_col = (unsigned char*)malloc( sizeof (FRAMED_SIZE * (**cells) ) );
-
-	if ( prev_col == nullptr || curr_col == nullptr || next_col == nullptr )
-	{
-		throw -3;
-	}
-
-	for ( int i = 0; i < FRAMED_SIZE; i++ )
-	{
-		prev_col[i] = 0;
-		curr_col[i] = 0;
-		next_col[i] = 0;
-	}
-
-	printf( "Done allocating.\n" );
+	free( prev_col );
+	free( curr_col );
+	free( next_col );
 }
 
 
@@ -154,9 +116,6 @@ int Cells::init_random()
 int Cells::update()
 {
 	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
-
-
-
 
 	// Copy initial position to buffers
 	memcpy( prev_col, cells[0], FRAMED_SIZE * sizeof(**cells) );
@@ -223,4 +182,6 @@ int Cells::render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width, int s
 			}		
 		}
 	}
+
+	return 0;
 }
