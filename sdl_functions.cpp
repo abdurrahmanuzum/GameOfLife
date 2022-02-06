@@ -17,6 +17,11 @@ bool init_SDL()
 		printf( "WARNING: I don't know why this matters.\n" );
 	}
 
+	if ( !SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software") )
+	{
+		printf( "Software rendering not enabled.\n" );
+	}
+
 	window = SDL_CreateWindow( "Game of Life", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN );
 	if ( window == nullptr )
 	{
@@ -47,6 +52,7 @@ void quit_SDL()
 
 	SDL_Quit();
 }
+
 
 void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, int start_y, int end_y )
 {

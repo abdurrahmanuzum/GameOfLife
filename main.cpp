@@ -1,5 +1,4 @@
 #include "main.h"
-#include<Windows.h>
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -7,7 +6,7 @@ SDL_Renderer* renderer = nullptr;
 const int WINDOW_WIDTH = 700;
 const int WINDOW_HEIGHT = 700;
 
-const int POPULATION = 20;
+const int POPULATION = 50;
 
 
 typedef struct
@@ -16,19 +15,23 @@ typedef struct
 	int x_end_index;
 	int y_start_index;
 	int y_end_index;
+
 }Gridmap;
+
 
 void update_cells( unsigned char** cells, int size )
 {
 	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
 
-	unsigned char* prev_col = nullptr;
-	unsigned char* curr_col = nullptr;
-	unsigned char* next_col = nullptr;
-	
-	prev_col = (unsigned char*)malloc( sizeof(cells[0]) );
-	curr_col = (unsigned char*)malloc( sizeof(cells[0]) );
-	next_col = (unsigned char*)malloc( sizeof(cells[0]) );
+	static unsigned char* prev_col = (unsigned char*)malloc( sizeof(cells[0]) );
+	static unsigned char* curr_col = (unsigned char*)malloc( sizeof(cells[0]) );
+	static unsigned char* next_col = (unsigned char*)malloc( sizeof(cells[0]) );
+
+	if ( prev_col == nullptr || curr_col == nullptr || next_col == nullptr )
+	{
+		printf( "On function update_cells: Buffer memory allocation failed. Aborting.\n" );
+		return;
+	}
 
 	memcpy( prev_col, cells[0], size+2 );
 	memcpy( curr_col, cells[1], size+2 );
@@ -52,12 +55,14 @@ void update_cells( unsigned char** cells, int size )
 			}
 		}
 
-		if ( i+2 < size+2 ) //Should be a way around this...
+		if ( i+2 >= size+2 ) //Should be a way around this...
 		{
-			memcpy( prev_col, curr_col, size+2 );
-			memcpy( curr_col, next_col, size+2 );
-			memcpy( next_col, cells[i+2], size+2 );
+			break;
 		}
+
+		memcpy( prev_col, curr_col, size+2 );
+		memcpy( curr_col, next_col, size+2 );
+		memcpy( next_col, cells[i+2], size+2 );		
 	}
 }
 
@@ -70,13 +75,12 @@ int print_to_window( unsigned char** cells, int full_size, Gridmap grid, SDL_Rec
 		printf( "Invalid indecies detected, aborting printing...\n" );
 		return -1;
 	}
-
-
+	
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
-	for ( int j = grid.y_start_index; j < grid.y_end_index; j++ )
+	for ( int j = grid.y_start_index; j <= grid.y_end_index; j++ )
 	{
-		for ( int i = grid.x_start_index; i < grid.x_end_index; i++ )
+		for ( int i = grid.x_start_index; i <= grid.x_end_index; i++ )
 		{
 			unit_rect.x = i * unit_rect.w;
 			unit_rect.y = j * unit_rect.h;
@@ -84,11 +88,7 @@ int print_to_window( unsigned char** cells, int full_size, Gridmap grid, SDL_Rec
 			if ( cells[i+1][j+1] == 1 )
 			{
 				SDL_RenderFillRect( renderer, &unit_rect );
-			}
-			else
-			{
-				//SDL_RenderDrawRect( renderer, &unit_rect );
-			}			
+			}		
 		}
 	}
 }
@@ -98,10 +98,7 @@ int initialise_cells( unsigned char** cells, int full_size, Gridmap grid, SDL_Re
 {
 	int mouse_x = 0;
 	int mouse_y = 0;
-
-
 	
-
 	if ( event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_RETURN )
 	{
 		return 1;
@@ -116,6 +113,7 @@ int initialise_cells( unsigned char** cells, int full_size, Gridmap grid, SDL_Re
 		unit_rect.x = i * unit_rect.w;
 		unit_rect.y = j * unit_rect.h;
 
+		// ADD SINGLE CAPTURE IT REPEATS THE SHIT OUT OF THIS
 		if ( event.button.button == SDL_BUTTON_LEFT )
 		{
 			printf( "The cell: (%d,%d) is set to alive.", 1 + grid.x_start_index + i, 1 + grid.y_start_index + j );
@@ -145,7 +143,22 @@ int initialise_cells( unsigned char** cells, int full_size, Gridmap grid, SDL_Re
 	return 0;
 }
 
+void initialise_cells_random( unsigned char** cells, int full_size )
+{
+	if ( cells == nullptr )
+	{
+		printf( "On function initialise_cells_random: null pointer passed. Aborting.\n" );
+		return;
+	}
 
+	for ( int i = 1; i < full_size+1; i++ )
+	{
+		for ( int j = 1; j < full_size+1; j++ )
+		{
+			cells[i][j] = rand()%2;
+		}
+	}
+}
 
 
 
@@ -155,15 +168,27 @@ int main ( int argc, char** argv )
 	if ( !init_SDL() )
 	{
 		return -1;
-	}
-	
+	}	
 
-	unsigned char** cells = nullptr;
+	srand(time(NULL));
+
+	unsigned char** cells = NULL;
 
 	cells = (unsigned char**)malloc( (POPULATION+2) * sizeof(*cells) );
+	if ( cells == NULL )
+	{
+		printf( "Memory allocation to cell array failed. Aborting program...\n" );
+		return -1;
+	}
+
 	for ( int i = 0; i < (POPULATION+2); i++ )
 	{
 		cells[i] = (unsigned char*)malloc( (POPULATION+2) * sizeof(cells[0]) );
+		if ( cells[i] == NULL )
+		{
+			printf( "Memory allocation to row:%d is failed. Aborting program...\n", i );
+			return -1;
+		}
 	}
 
 	for ( int j = 0; j < (POPULATION+2); j++ )
@@ -176,24 +201,26 @@ int main ( int argc, char** argv )
 
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 
-
-	/*cells[2][2] = 1;
-	cells[2][3] = 1;
-	cells[3][2] = 1;
-	cells[3][3] = 1;*/
-
 	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1 };
 
 
+	
+	initialise_cells_random( cells, POPULATION );
+	bool initialised = true;//false;
+	
 	bool quit = false;
-	bool initialised = false;
 	SDL_Event event;
+
+	int iteration = 0;
+
 
 	SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 	SDL_RenderPresent( renderer );
 
 	while ( !quit )
 	{
+		//printf( "On game loop: iteration:%d\n", iteration );
+
 		while( SDL_PollEvent( &event ) != 0 )
 		{
 			if ( event.type == SDL_QUIT )
@@ -208,38 +235,29 @@ int main ( int argc, char** argv )
 			continue;
 		}
 
-		printf("Actual program started.\n");
-			
 
 		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 		SDL_RenderClear( renderer );
 
+
 		update_cells( cells, POPULATION );
 		print_to_window( cells, POPULATION, grid, unit_rect );
+		//SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 
-		SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 		SDL_RenderPresent( renderer );
 
+		SDL_Delay(250);
 
-		SDL_Delay(1000);
-
-
-
+		iteration++;
 	}
 
 
 
-
-
-
-
-
-
-	for ( int i = 0; i < (POPULATION+2); i++ )
-	{
-		free( cells[i] );
-	}
-	free( cells );
+	//for ( int i = 0; i < (POPULATION+2); i++ )
+	//{
+	//	free( cells[i] );
+	//}
+	//free( cells );
 
 
 	quit_SDL();
