@@ -151,10 +151,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cells.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="sdl_functions.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cells.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
