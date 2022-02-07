@@ -5,12 +5,10 @@ SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
 const int POPULATION = 100;
-const int SIZE = POPULATION+2;
 
 const int MAX_WINDOW_WIDTH = 700;
 const int MAX_WINDOW_HEIGHT = 700;
 
-#define INIT_RANDOM true
 #define SCALE_WINDOW_TO_POPULATION
 
 #ifdef SCALE_WINDOW_TO_POPULATION
@@ -22,6 +20,9 @@ const int MAX_WINDOW_HEIGHT = 700;
 #endif
 
 int check_error = 0;
+
+
+
 
 int main ( int argc, char** argv )
 {
@@ -37,13 +38,14 @@ int main ( int argc, char** argv )
 
 
 
-//----------------------------------Auxilary Variables-----------------------------------//
+//----------------------------------Auxiliary Variables-----------------------------------//
 
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1 };
 	
 	bool initialised = false;	
 	bool draw_grid = false;
+	bool init_random = true;
 
 	bool quit = false;
 	SDL_Event event;
@@ -53,7 +55,6 @@ int main ( int argc, char** argv )
 
 	srand(time(NULL));
 	
-
 	SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 	SDL_RenderPresent( renderer );
 
@@ -72,7 +73,7 @@ int main ( int argc, char** argv )
 
 		if ( !initialised )
 		{
-			if ( INIT_RANDOM )
+			if ( init_random )
 			{
 				cells.init_random();
 				initialised = true;
