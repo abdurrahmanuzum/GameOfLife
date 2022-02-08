@@ -209,31 +209,45 @@ int Cells::init_by_user( Gridmap grid, SDL_Rect unit_rect )
 	return 0;
 }
 
-
-int Cells::init_by_imag( const char* path )
+// This function will be transferred to a seperate program and will cease to exist here.
+int Cells::init_by_imag( const char* path, int cell_length, int active_color )
 {
+	int offset = cell_length / 2;
+
 	SDL_Surface* image_surface = SDL_LoadBMP( path );
 	if ( image_surface == NULL )
 	{
 		fprintf( stderr, "ERROR: On function Cells::init_by_imag Failed to load image: %s\n", SDL_GetError() );
 		return -1;
 	}
-
-	int bpp = image_surface->format->BytesPerPixel;
-	
-	// TODO: Add a proper error checking here.
-
-	// Surface width and height are in bytes, not bits!
-
-	for ( int j = 0; j < image_surface->h; j++ )
+	else if ( image_surface->format->BytesPerPixel != 1 )
 	{
-		for ( int i = 0; i < image_surface->w; i++ )
+		fprintf( stderr, "ERROR: On function Cells::init_by_imag Only accepting monochrome bmp images. bkz->Paint, her þeyi devletten bekleme...\n" );
+		return -1;
+	}
+	else if ( image_surface->h / cell_length >= POPULATION  ||  image_surface->w / cell_length >= POPULATION )
+	{
+		fprintf( stderr, "WARNING: On function Cells::init_by_imag <%s> contains too much information and will be truncated.\n", path );
+	}
+
+	// Iterate through selected pixels and write to the cells. Exits if the end of image or cells array is encountered.
+	for ( int j = 0; j < POPULATION; j++ )
+	{
+		int grab_y = offset + j*cell_length;
+		if ( grab_y >= image_surface->h ) { break; }
+
+
+		for ( int i = 0; i < POPULATION; i++ )
 		{
-			Uint8* index = (Uint8*)image_surface->pixels + j*image_surface->pitch + i*bpp;
-			cells[i+1][j+1] = *index;
+			int grab_x = offset + i*cell_length;
+			if ( grab_x >= image_surface->w ) { break; }
+
+			Uint8* index = (Uint8*)image_surface->pixels + grab_y*image_surface->pitch + grab_x;
+			cells[i+1][j+1] = ( *index == active_color ); 
 		}
 	}
 
+	// Turns out you don't free( an SDL surface pointer ) ...
 	SDL_FreeSurface( image_surface );
 	image_surface = NULL;
 

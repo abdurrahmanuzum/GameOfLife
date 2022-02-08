@@ -24,7 +24,7 @@ class Cells
 		int render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT );
 		
 		int init_by_user( Gridmap grid, SDL_Rect unit_rect );
-		int init_by_imag( const char* path );
+		int init_by_imag( const char* path, int cell_length, int active_color );
 		int init_by_rand();
 
 };

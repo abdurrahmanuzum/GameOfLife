@@ -3,12 +3,14 @@
 
 
 #define SCALE_WINDOW_TO_POPULATION
+#define IMAGE_PATH "./gun.bmp"
+#define GRID_SHOWN false
 
 
 SDL_Window*	  window   = NULL;
 SDL_Renderer* renderer = NULL;
 
-const int POPULATION = 20;
+const int POPULATION = 50;
 
 const int MAX_WINDOW_WIDTH = 700;
 const int MAX_WINDOW_HEIGHT = 700;
@@ -49,14 +51,12 @@ int main ( int argc, char** argv )
 	
 	SDL_Event event;
 
-	INIT_TYPE init_type = INIT_TYPE::RANDOM;
+	INIT_TYPE init_type = INIT_TYPE::IMAGE;
 
 	// Control flags	
-	bool draw_grid		 = true;
 	bool quit			 = false;
 
-	char image_path[100] = { 0 };
-	strcpy( image_path, "binary_16_8.bmp" );
+
 
 	
 
@@ -72,13 +72,12 @@ int main ( int argc, char** argv )
 	switch( init_type )
 	{
 		// All init functions return 0 at success.
-
 		case INIT_TYPE::USER:
 			quit = cells.init_by_user( grid, unit_rect );
 		break;
 
 		case INIT_TYPE::IMAGE:
-			quit = cells.init_by_imag( image_path );
+			quit = cells.init_by_imag( IMAGE_PATH, 50, 0 );
 		break;
 
 		case INIT_TYPE::FILE:
@@ -128,11 +127,11 @@ int main ( int argc, char** argv )
 		cells.update();
 		cells.render( grid, unit_rect );
 
-		if ( draw_grid ) { SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF ); }
+		if ( GRID_SHOWN ) { SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF ); }
 
 
 		SDL_RenderPresent( renderer );
-		SDL_Delay(250);
+		SDL_Delay(100);
 	}
 
 
