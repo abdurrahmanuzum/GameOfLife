@@ -185,3 +185,28 @@ int Cells::render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width, int s
 
 	return 0;
 }
+
+int Cells::init_from_image( const char* path )
+{
+	SDL_Surface* image_surface = SDL_LoadBMP( path );
+	if ( image_surface == NULL )
+	{
+		printf( "Failed to load image: %s\n", SDL_GetError() );
+		return -1;
+	}
+
+	int bpp = image_surface->format->BytesPerPixel;
+	
+	// TODO: Add a proper error checking here.
+
+	// Surface width and height are in bytes, not bits!
+
+	for ( int j = 0; j < image_surface->h; j++ )
+	{
+		for ( int i = 0; i < image_surface->w; i++ )
+		{
+			Uint8* index = (Uint8*)image_surface->pixels + j*image_surface->pitch + i*bpp;
+			cells[i+1][j+1] = *index;
+		}
+	}
+}

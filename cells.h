@@ -23,6 +23,7 @@ class Cells
 		int render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width = WINDOW_WIDTH, int sub_window_height = WINDOW_HEIGHT );
 		int init( Gridmap grid, SDL_Rect unit_rect, SDL_Event& event );
 		int init_random();
+		int init_from_image( const char* path );
 
 
 };
