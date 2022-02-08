@@ -1,25 +1,30 @@
 #include "main.h"
 #include "cells.h"
 
-SDL_Window* window = nullptr;
-SDL_Renderer* renderer = nullptr;
+
+#define SCALE_WINDOW_TO_POPULATION
+
+
+SDL_Window*	  window   = NULL;
+SDL_Renderer* renderer = NULL;
 
 const int POPULATION = 20;
 
 const int MAX_WINDOW_WIDTH = 700;
 const int MAX_WINDOW_HEIGHT = 700;
 
-#define SCALE_WINDOW_TO_POPULATION
 
 #ifdef SCALE_WINDOW_TO_POPULATION
-	const int WINDOW_WIDTH = POPULATION * (MAX_WINDOW_WIDTH/POPULATION);
+	const int WINDOW_WIDTH	= POPULATION * (MAX_WINDOW_WIDTH/POPULATION);
 	const int WINDOW_HEIGHT = POPULATION * (MAX_WINDOW_HEIGHT/POPULATION);
 #else
-	const int WINDOW_WIDTH = MAX_WINDOW_WIDTH;
+	const int WINDOW_WIDTH	= MAX_WINDOW_WIDTH;
 	const int WINDOW_HEIGHT = MAX_WINDOW_HEIGHT;
 #endif
 
+// Will remove this soon
 int check_error = 0;
+
 
 
 
@@ -32,39 +37,78 @@ int main ( int argc, char** argv )
 
 	if ( check_error < 0 )
 	{
-		printf( "Process failed with code:%d\n", check_error );
+		fprintf( stderr, "Process failed with code:%d\n", check_error );
 		return check_error;
 	}
 
 
-
-//----------------------------------Auxiliary Variables-----------------------------------//
+	//----------------------------------Auxiliary Variables-----------------------------------//
 
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1 };
 	
-	bool initialised = false;	
-	bool displayed = false;
-	bool draw_grid = false;
-	bool init_random = false;
-	bool init_from_image = !init_random && true;
+	SDL_Event event;
+
+	INIT_TYPE init_type = INIT_TYPE::RANDOM;
+
+	// Control flags	
+	bool draw_grid		 = true;
+	bool quit			 = false;
 
 	char image_path[100] = { 0 };
 	strcpy( image_path, "binary_16_8.bmp" );
 
-	bool quit = false;
-	SDL_Event event;
+	
 
 
-//------------------------------------Preperations---------------------------------------//
+	//------------------------------------Preperations---------------------------------------//
 
 	srand(time(NULL));
 	
 	SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
 	SDL_RenderPresent( renderer );
 
+	// init_type will be passed into the main function in the future as a string
+	switch( init_type )
+	{
+		// All init functions return 0 at success.
 
-//------------------------------------Main Loop-------------------------------------------//
+		case INIT_TYPE::USER:
+			quit = cells.init_by_user( grid, unit_rect );
+		break;
+
+		case INIT_TYPE::IMAGE:
+			quit = cells.init_by_imag( image_path );
+		break;
+
+		case INIT_TYPE::FILE:
+			printf( "Not yet.\n" );
+		break;
+
+		case INIT_TYPE::RANDOM:
+			quit = cells.init_by_rand();
+		break;
+
+		default:
+			fprintf( stderr, "Initialisation type is not passed or invalid.\n" );
+			quit = true;
+		break;
+	}
+
+	// Display what the initial conditions are set to
+	if ( !quit )
+	{
+		printf( "Initial conditions are set as shown, press any key to continue.\n" );
+		cells.render( grid, unit_rect );
+		SDL_RenderPresent( renderer );
+
+		// Wait for user input then get rid of it.
+		scanf( "%*[^\n]%*c" ); 
+	}
+
+
+
+	//------------------------------------Main Loop-------------------------------------------//
 
 	while ( !quit )
 	{
@@ -74,44 +118,12 @@ int main ( int argc, char** argv )
 			{
 				quit = true;
 			}			
-		}
 
-		if ( !initialised )
-		{
-			if ( init_random )
-			{
-				cells.init_random();
-				initialised = true;
-			}
-			else if ( init_from_image )
-			{
-				initialised = true;
-				int ret = cells.init_from_image( image_path );
-				printf( "Ret=%d\n", ret );
-			}
-			else
-			{
-				initialised = cells.init( grid, unit_rect, event );
-
-				SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
-				SDL_RenderPresent( renderer );
-			}
-
-			continue;			
-		}
-		else if ( !displayed )
-		{   //TODO: Do this with SDL events instead.
-			displayed = true;
-			cells.render( grid, unit_rect );
-			SDL_RenderPresent( renderer );
-			printf( "Displaying initial condition for confirmation.\n" );
-			system("pause");
-		}
+			// Zoom/pan handlers will go here
+		}		
 
 		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 		SDL_RenderClear( renderer );
-
-
 		
 		cells.update();
 		cells.render( grid, unit_rect );

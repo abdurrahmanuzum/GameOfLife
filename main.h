@@ -40,3 +40,5 @@ typedef struct
 	int y_end_index;
 
 }Gridmap;
+
+enum class INIT_TYPE { USER, IMAGE, FILE, RANDOM };

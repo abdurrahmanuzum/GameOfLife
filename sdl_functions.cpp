@@ -8,31 +8,31 @@ bool init_SDL()
 {
 	if ( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
-		printf( "Failed to initialise SDL: %s\n", SDL_GetError() );
+		fprintf( stderr, "Failed to initialise SDL: %s\n", SDL_GetError() );
 		return false;
 	}
 
 	if ( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
 	{
-		printf( "WARNING: I don't know why this matters.\n" );
+		fprintf( stderr, "WARNING: I don't know why this matters.\n" );
 	}
 
 	if ( !SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software") )
 	{
-		printf( "Software rendering not enabled.\n" );
+		fprintf( stderr, "Software rendering not enabled.\n" );
 	}
 
 	window = SDL_CreateWindow( "Game of Life", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN );
 	if ( window == nullptr )
 	{
-		printf( "Failed to initialise window: %s\n", SDL_GetError() );
+		fprintf( stderr, "Failed to initialise window: %s\n", SDL_GetError() );
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
 	if ( renderer == nullptr )
 	{
-		printf( "Failed to create renderer: %s\n", SDL_GetError() );
+		fprintf( stderr, "Failed to create renderer: %s\n", SDL_GetError() );
 		return false;
 	}
 
@@ -47,8 +47,8 @@ void quit_SDL()
 	SDL_DestroyRenderer( renderer );
 	SDL_DestroyWindow( window );
 
-	window = nullptr;
-	renderer = nullptr;
+	window	 = NULL;
+	renderer = NULL;
 
 	SDL_Quit();
 }
@@ -61,7 +61,7 @@ void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, i
 
 	if ( x_dist <= 0 || y_dist <= 0 ) // Should learn Cpp exceptions sometime.
 	{
-		printf( "ERROR: On function SDL_DrawSquareGrid: Invalid parameters\n" );
+		fprintf( stderr, "ERROR: On function SDL_DrawSquareGrid: Invalid parameters\n" );
 		return;
 	}
 
