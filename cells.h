@@ -14,6 +14,9 @@ class Cells
 		unsigned char* curr_col;
 		unsigned char* next_col;
 
+	public:
+		int allocated;
+
 		
 
 	public:

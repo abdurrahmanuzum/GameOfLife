@@ -2,6 +2,7 @@
 
 Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+2)
 {
+	allocated = 0;
 	//TODO: Add proper memory allocation failure handling.
 
 	// Allocate main array
@@ -9,7 +10,7 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 	if ( cells == NULL )
 	{
 		fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on cells\n" );
-		check_error = -1;
+		allocated = -1;
 	}
 	else
 	{
@@ -20,30 +21,30 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 			if ( cells[i] == NULL )
 			{
 				fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on columns\n" );
-				check_error = -2;
+				allocated = -2;
 			}
 		}
 
-		if ( check_error >= 0 )
+		if ( allocated >= 0 )
 		{
 			// Initialise all cells to be 0, isn't necessary, just a redundant error checking
-			for ( int i = 0; i < FRAMED_SIZE; i++ )
+			for ( int j = 0; j < FRAMED_SIZE; j++ )
 			{
-				for ( int j = 0; j < FRAMED_SIZE; j++ )
+				for ( int i = 0; i < FRAMED_SIZE; i++ )
 				{
 					cells[i][j] = 0;
 				}
 			}
 
 			// Allocate buffers
-			prev_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-			curr_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
-			next_col = (unsigned char*)malloc( sizeof( FRAMED_SIZE * (**cells) ) );
+			prev_col = (unsigned char*)malloc( FRAMED_SIZE * sizeof(**cells) );
+			curr_col = (unsigned char*)malloc( FRAMED_SIZE * sizeof(**cells) );
+			next_col = (unsigned char*)malloc( FRAMED_SIZE * sizeof(**cells) );
 			
 			if ( prev_col == NULL ||curr_col == NULL || next_col == NULL )
 			{
 				fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on buffers\n" );
-				check_error = -3;
+				allocated = -3;
 			}
 		}
 	}	

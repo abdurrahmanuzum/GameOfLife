@@ -3,8 +3,11 @@
 
 
 #define SCALE_WINDOW_TO_POPULATION
-#define IMAGE_PATH "./hammerhead_40ppc.bmp"
 #define GRID_SHOWN false
+
+#define IMAGE_PATH	 "./gun_50ppc.bmp"
+#define IMAGE_PPC	 50 //Pixels per cell on the source image
+#define ACTIVE_COLOR 0  //Alive cell color on the source image, 1 for white, 0 for black
 
 
 SDL_Window*	  window   = NULL;
@@ -24,36 +27,25 @@ const int MAX_WINDOW_HEIGHT = 700;
 	const int WINDOW_HEIGHT = MAX_WINDOW_HEIGHT;
 #endif
 
-// Will remove this soon
-int check_error = 0;
-
-
-
-
 
 int main ( int argc, char** argv )
 {
 	if ( !init_SDL() ) { return -1; }	
 
+	// Create 2d array of cells of size POPULATION x POPULATION
 	Cells cells( POPULATION );
-
-	if ( check_error < 0 )
-	{
-		fprintf( stderr, "Process failed with code:%d\n", check_error );
-		return check_error;
-	}
+	if ( cells.allocated < 0 ) { return -1; }
 
 
 	//----------------------------------Auxiliary Variables-----------------------------------//
 
+	// To keep track of pan/zoom setting, which doesn't exist yet.
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
 	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1 };
-	
-	SDL_Event event;
 
 	INIT_TYPE init_type = INIT_TYPE::IMAGE;
 
-	// Control flags	
+	SDL_Event event;
 	bool quit = false;	
 
 
@@ -73,7 +65,7 @@ int main ( int argc, char** argv )
 		break;
 
 		case INIT_TYPE::IMAGE:
-			quit = cells.init_by_imag( IMAGE_PATH, 39, 0 );
+			quit = cells.init_by_imag( IMAGE_PATH, IMAGE_PPC, ACTIVE_COLOR );
 		break;
 
 		case INIT_TYPE::FILE:
@@ -131,6 +123,6 @@ int main ( int argc, char** argv )
 	}
 
 
-	quit_SDL();
+	//quit_SDL();
 	return 0;
 }
