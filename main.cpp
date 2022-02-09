@@ -3,7 +3,7 @@
 
 
 #define SCALE_WINDOW_TO_POPULATION
-#define IMAGE_PATH "./gun.bmp"
+#define IMAGE_PATH "./hammerhead_40ppc.bmp"
 #define GRID_SHOWN false
 
 
@@ -54,11 +54,7 @@ int main ( int argc, char** argv )
 	INIT_TYPE init_type = INIT_TYPE::IMAGE;
 
 	// Control flags	
-	bool quit			 = false;
-
-
-
-	
+	bool quit = false;	
 
 
 	//------------------------------------Preperations---------------------------------------//
@@ -77,7 +73,7 @@ int main ( int argc, char** argv )
 		break;
 
 		case INIT_TYPE::IMAGE:
-			quit = cells.init_by_imag( IMAGE_PATH, 50, 0 );
+			quit = cells.init_by_imag( IMAGE_PATH, 39, 0 );
 		break;
 
 		case INIT_TYPE::FILE:
