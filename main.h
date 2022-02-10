@@ -30,14 +30,16 @@ enum class Color { WHITE, BLACK, RED, GREEN, BLUE };
 bool init_SDL();
 void quit_SDL();
 
+// TODO: Needs to work with Gridmap
 void SDL_DrawSquareGrid( int cell_count, Uint32 color = 0xFFFFFFFF, int start_x = 0, int end_x = WINDOW_WIDTH, int start_y = 0, int end_y = WINDOW_HEIGHT );
 
 typedef struct
 {
-	int x_start_index;
-	int x_end_index;
-	int y_start_index;
-	int y_end_index;
+	int x_index_first;
+	int x_index_last;
+	int y_index_first;
+	int y_index_last;
+	SDL_Rect unit_rect;
 
 }Gridmap;
 

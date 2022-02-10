@@ -1,5 +1,6 @@
 #include "cells.h"
 
+
 Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+2)
 {
 	allocated = 0;
@@ -72,8 +73,6 @@ Cells::~Cells()
 }
 
 
-
-
 int Cells::update()
 {
 	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
@@ -119,22 +118,27 @@ int Cells::update()
 }
 
 
-int Cells::render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width, int sub_window_heigh )
+int Cells::render( Gridmap* grid )
 {
-	if ( grid.x_start_index < 0 || grid.x_end_index >= POPULATION || grid.y_start_index < 0 || grid.y_end_index >= POPULATION )
-	{
-		fprintf( stderr, "ERROR On function Cells::render Invalid indecies.\n" );
-		return -1;
-	}
-	
+	// Clamping requested indecies if necessary. Probably should do that on the pan/zoom control instead of here.
+
+	if ( grid->x_index_first < 0 )		    { grid->x_index_first = 0; }	
+	if ( grid->x_index_last  > POPULATION ) { grid->x_index_last  = POPULATION; }
+	if ( grid->y_index_first < 0 )		    { grid->y_index_first = 0; }
+	if ( grid->y_index_last  > POPULATION ) { grid->y_index_last  = POPULATION; }
+
+
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
-	for ( int i = grid.x_start_index; i <= grid.x_end_index; i++ )
+	// Probably isn't necessary but I don't want to modify grid's unit_rect.
+	SDL_Rect unit_rect = grid->unit_rect;
+
+	for ( int j = grid->y_index_first; j < grid->y_index_last; j++ )
 	{
-		for ( int j = grid.y_start_index; j <= grid.y_end_index; j++ )
+		for ( int i = grid->x_index_first; i < grid->x_index_last; i++ )
 		{
-			unit_rect.x = i * unit_rect.w;
-			unit_rect.y = j * unit_rect.h;
+			unit_rect.x = (i - grid->x_index_first) * unit_rect.w;
+			unit_rect.y = (j - grid->y_index_first) * unit_rect.h;
 
 			if ( cells[i+1][j+1] == 1 )
 			{
@@ -147,20 +151,19 @@ int Cells::render( Gridmap grid, SDL_Rect unit_rect, int sub_window_width, int s
 }
 
 
-
-
-int Cells::init_by_user( Gridmap grid, SDL_Rect unit_rect )
+int Cells::init_by_user( Gridmap* grid )
 {
-	if ( grid.x_start_index < 0 || grid.x_end_index >= POPULATION || grid.y_start_index < 0 || grid.y_end_index >= POPULATION )
-	{
-		fprintf( stderr, "ERROR On function Cells::init_by_user Invalid indecies.\n" );
-		return -1;
-	}
+	// Clamping requested indecies if necessary. Probably should do that on the pan/zoom control instead of here.
+	if ( grid->x_index_first < 0 )		    { grid->x_index_first = 0; }	
+	if ( grid->x_index_last  > POPULATION ) { grid->x_index_last  = POPULATION; }
+	if ( grid->y_index_first < 0 )		    { grid->y_index_first = 0; }
+	if ( grid->y_index_last  > POPULATION ) { grid->y_index_last  = POPULATION; }
 
 	int mouse_x = 0;
 	int mouse_y = 0;
 	bool done = false;
 	SDL_Event event;
+	SDL_Rect unit_rect = grid->unit_rect;
 
 	while ( !done )
 	{
@@ -189,14 +192,14 @@ int Cells::init_by_user( Gridmap grid, SDL_Rect unit_rect )
 				//TODO: ADD SINGLE CAPTURE IT REPEATS THE SHIT OUT OF THIS
 				if ( event.button.button == SDL_BUTTON_LEFT ) // Set alive
 				{
-					cells[ 1 + grid.x_start_index + i ][ 1 + grid.y_start_index + j ] = 1;
+					cells[ 1 + grid->x_index_first + i ][ 1 + grid->y_index_first + j ] = 1;
 
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xff, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
 				}
 				else if ( event.button.button == SDL_BUTTON_RIGHT ) // Set dead
 				{
-					cells[ 1 + grid.x_start_index + i ][ 1 + grid.y_start_index + j ] = 0;
+					cells[ 1 + grid->x_index_first + i ][ 1 + grid->y_index_first + j ] = 0;
 			
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
@@ -210,7 +213,7 @@ int Cells::init_by_user( Gridmap grid, SDL_Rect unit_rect )
 	return 0;
 }
 
-// This function will be transferred to a seperate program and will cease to exist here.
+
 int Cells::init_by_imag( const char* path, int cell_length, int active_color )
 {
 	int offset = cell_length / 2;
