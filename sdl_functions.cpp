@@ -54,6 +54,7 @@ void quit_SDL()
 }
 
 
+// TODO: Needs to work with Gridmap
 void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, int start_y, int end_y )
 {
 	double x_dist = (end_x - start_x) / (double)cell_count;

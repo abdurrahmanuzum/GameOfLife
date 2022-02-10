@@ -151,6 +151,7 @@ int Cells::render( Gridmap* grid )
 }
 
 
+//TODO: This probably shouldn't have its own event loop.
 int Cells::init_by_user( Gridmap* grid )
 {
 	// Clamping requested indecies if necessary. Probably should do that on the pan/zoom control instead of here.
@@ -261,9 +262,9 @@ int Cells::init_by_imag( const char* path, int cell_length, int active_color )
 
 int Cells::init_by_rand()
 {
-	for ( int i = 1; i < POPULATION+1; i++ )
+	for ( int j = 1; j < POPULATION+1; j++ )
 	{
-		for ( int j = 1; j < POPULATION+1; j++ )
+		for ( int i = 1; i < POPULATION+1; i++ )
 		{
 			cells[i][j] = rand()%2;
 		}

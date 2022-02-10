@@ -5,9 +5,9 @@
 #define SCALE_WINDOW_TO_POPULATION
 #define GRID_SHOWN false
 
-#define IMAGE_PATH	 "./binary_16_8.bmp"
-#define IMAGE_PPC	 1 //Pixels per cell on the source image
-#define ACTIVE_COLOR 1  //Alive cell color on the source image, 1 for white, 0 for black
+#define IMAGE_PATH	 "./gun_50ppc.bmp" //Screen captured from Wikipedia heheh.
+#define IMAGE_PPC	 50 //Pixels per cell on the source image
+#define ACTIVE_COLOR 0  //Alive cell color on the source image, 1 for white, 0 for black
 
 
 SDL_Window*	  window   = NULL;
@@ -17,10 +17,6 @@ const int POPULATION = 50;
 
 const int MAX_WINDOW_WIDTH = 700;
 const int MAX_WINDOW_HEIGHT = 700;
-
-
-
-const int ZOOM = 5; //Increase of cell length in pixels per mouse wheel tick
 
 
 #ifdef SCALE_WINDOW_TO_POPULATION
@@ -35,6 +31,7 @@ const int CELL_LENGTH_MIN = WINDOW_WIDTH / POPULATION;
 const int CELL_LENGTH_MAX = WINDOW_WIDTH / 20;
 
 
+// Will be carried to another file or a class that deals with display business, wrapping SDL as well
 void handle_pan_zoom( Gridmap* grid, SDL_Event& event )
 {
 	static bool	  held   = false;
@@ -190,6 +187,6 @@ int main ( int argc, char** argv )
 	}
 
 
-	//quit_SDL();
+	quit_SDL();
 	return 0;
 }
