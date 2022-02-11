@@ -4,7 +4,7 @@ SDL_Window*	  window   = NULL;
 SDL_Renderer* renderer = NULL;
 
 
-bool init_SDL( Env* env )
+bool init_SDL( Env env )
 {
 	if ( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
@@ -25,7 +25,7 @@ bool init_SDL( Env* env )
 	window = SDL_CreateWindow( "Game of Life", 
 								SDL_WINDOWPOS_CENTERED, 
 								SDL_WINDOWPOS_CENTERED,
-								env->window_w, env->window_h,
+								env.window_w, env.window_h,
 								SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if ( window == nullptr )
 	{
@@ -225,6 +225,23 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			i++;
 		}
+		else if ( strncmp( argv[i], "--grid", 6 ) == 0 )
+		{
+			if ( strncmp( argv[i+1], "shown", 5 ) == 0 )
+			{
+				env->grid_shown = true;
+			}
+			else if ( strncmp( argv[i+1], "hidden", 6 ) == 0 )
+			{
+				env->grid_shown = false;
+			}
+			else
+			{
+				fprintf( stderr, "--grid flag takes one of \"shown\", \"hidden\" arguments. %s isn't recognised.\n", argv[i+1] );
+				exit(EXIT_FAILURE);
+			}
+			i++;
+		}
 		else
 		{
 			fprintf( stderr, "%s isn't recognised as a valid command or argument.\n", argv[i] );
@@ -242,7 +259,7 @@ void get_options( int argc, char** argv, Env* env )
 }
 
 
-void handle_pan_zoom( Env* env, Gridmap* grid, SDL_Event& event )
+void handle_pan_zoom( Env* env, Map* map, SDL_Event& event )
 {
 	bool		  update = false;
 	static bool	  held   = false;
@@ -262,8 +279,8 @@ void handle_pan_zoom( Env* env, Gridmap* grid, SDL_Event& event )
 	// Zoom handling
 	else if ( event.type == SDL_MOUSEWHEEL ) 
 	{
-		grid->unit_rect.w += event.wheel.y * env->zoom_factor;
-		grid->unit_rect.h  = grid->unit_rect.w;
+		map->unit_rect.w += event.wheel.y * env->zoom_factor;
+		map->unit_rect.h  = map->unit_rect.w;
 
 		update = true;
 	}
@@ -285,8 +302,8 @@ void handle_pan_zoom( Env* env, Gridmap* grid, SDL_Event& event )
 	{
 		SDL_GetMouseState( &curr_x, &curr_y );
 
-		grid->unit_rect.x -= curr_x - prev_x;
-		grid->unit_rect.y -= curr_y - prev_y;
+		map->unit_rect.x -= curr_x - prev_x;
+		map->unit_rect.y -= curr_y - prev_y;
 
 		prev_x = curr_x;
 		prev_y = curr_y;
@@ -298,34 +315,62 @@ void handle_pan_zoom( Env* env, Gridmap* grid, SDL_Event& event )
 	{
 		// Clamp pan tracker
 
-		if ( grid->unit_rect.x < 0 ) { grid->unit_rect.x = 0; }
-		if ( grid->unit_rect.y < 0 ) { grid->unit_rect.y = 0; }
+		if ( map->unit_rect.x < 0 ) { map->unit_rect.x = 0; }
+		if ( map->unit_rect.y < 0 ) { map->unit_rect.y = 0; }
 
 		// Update indecies
 
-		grid->x_index_first = grid->unit_rect.x/grid->unit_rect.w;
-		grid->y_index_first = grid->unit_rect.y/grid->unit_rect.h;
+		map->x_index_first = map->unit_rect.x/map->unit_rect.w;
+		map->y_index_first = map->unit_rect.y/map->unit_rect.h;
 
-		grid->x_index_last = grid->x_index_first + ceil( (double)env->window_w / grid->unit_rect.w );
-		grid->y_index_last = grid->y_index_first + ceil( (double)env->window_h / grid->unit_rect.h );
+		map->x_index_last  = map->x_index_first + ceil( (double)env->window_w / map->unit_rect.w );
+		map->y_index_last  = map->y_index_first + ceil( (double)env->window_h / map->unit_rect.h );
 
 		// Clamp indecies
 
-		if ( grid->x_index_first < 0 )					{ grid->x_index_first = 0; }	
-		if ( grid->x_index_last  > env->population )	{ grid->x_index_last  = env->population; }
-		if ( grid->y_index_first < 0 )					{ grid->y_index_first = 0; }
-		if ( grid->y_index_last  > env->population )	{ grid->y_index_last  = env->population; }
+		if ( map->x_index_first < 0 )				{ map->x_index_first = 0; }	
+		if ( map->x_index_last  > env->population )	{ map->x_index_last  = env->population; }
+		if ( map->y_index_first < 0 )				{ map->y_index_first = 0; }
+		if ( map->y_index_last  > env->population )	{ map->y_index_last  = env->population; }
 
 		// Update border rectangle
 
-		grid->border_rect.w = grid->unit_rect.w * ( grid->x_index_last - grid->x_index_first );
-		grid->border_rect.h = grid->unit_rect.h * ( grid->y_index_last - grid->y_index_first );
+		map->border_rect.w = map->unit_rect.w * ( map->x_index_last - map->x_index_first );
+		map->border_rect.h = map->unit_rect.h * ( map->y_index_last - map->y_index_first );
 
 	}
 }
 
 
+// Will generalise this
+void SDL_DrawGrid( Env env, Map map )
+{
+	Uint32 color = env.grid_color;
+	Uint8 a = color & 0xFF;
 
+	color >>= 8;
+	Uint8 b = color & 0xFF;
+
+	color >>= 8;
+	Uint8 g = color & 0xFF;
+
+	color >>= 8;
+	Uint8 r = color & 0xFF;
+
+	SDL_SetRenderDrawColor( renderer, r, g, b, a );
+
+	// Vertical lines
+	for ( int i = 0; i <= env.window_w ; i += map.unit_rect.w )
+	{
+		SDL_RenderDrawLine( renderer, i, 0, i, env.window_h );
+	}
+	
+	// Horizontal lines
+	for ( int j = 0; j <= env.window_h; j += map.unit_rect.h )
+	{
+		SDL_RenderDrawLine( renderer, 0, j, env.window_w, j );
+	}
+}
 
 
 

@@ -24,9 +24,9 @@ class Cells
 		~Cells();
 		
 		int update();
-		int render( Gridmap grid );
+		int render( Map map );
 		
-		int init_by_user( Gridmap grid );
+		int init_by_user( Env env, Map map );
 		int init_by_imag( const char* path, int cell_length, int active_color );
 		int init_by_rand();
 

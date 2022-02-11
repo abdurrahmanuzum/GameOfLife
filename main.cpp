@@ -1,5 +1,6 @@
 #include "environment.h"
 #include "cells.h"
+#include "timer.h"
 
 
 int main ( int argc, char** argv )
@@ -10,6 +11,7 @@ int main ( int argc, char** argv )
 				500,						//Wýndow height
 				4,							//Zoom factor
 				false,						//Show grid
+				0xAAAAAAFF,					//Grid color
 				50,							//Population (2500)
 				"./gun_50ppc.bmp", 50, 0,	//Default image and its properties
 				INIT_TYPE::IMAGE };			//Initialise from image
@@ -18,7 +20,7 @@ int main ( int argc, char** argv )
 	get_options( argc, argv, &env );
 
 	//Initialise SDL
-	if ( !init_SDL( &env ) ) { return -1; }	
+	if ( !init_SDL( env ) ) { return -1; }	
 
 	// Create 2d array of cells of provided size
 	Cells cells( env.population );
@@ -30,7 +32,7 @@ int main ( int argc, char** argv )
 	// To keep track of pan/zoom setting.
 	SDL_Rect unit_rect   = { 0, 0, (env.window_w/env.population) , (env.window_h/env.population) };
 	SDL_Rect border_rect = { 0, 0, env.window_w, env.window_w };
-	Gridmap grid		 = { 0, env.population, 0, env.population, unit_rect, border_rect };
+	Map		 map		 = { 0, env.population, 0, env.population, unit_rect, border_rect };
 	
 	SDL_Event event;
 	bool quit = false;	
@@ -44,7 +46,7 @@ int main ( int argc, char** argv )
 	{
 		// All init functions return 0 at success.
 		case INIT_TYPE::USER:
-			quit = cells.init_by_user( grid );
+			quit = cells.init_by_user( env, map );
 		break;
 
 		case INIT_TYPE::IMAGE:
@@ -65,11 +67,11 @@ int main ( int argc, char** argv )
 		break;
 	}
 
-	// Display what the initial conditions are set to
+	// Display what the initial conditions are set to. Will find a better way of doing this.
 	if ( !quit )
 	{
 		printf( "Initial conditions are set as shown, press any key to continue.\n" );
-		cells.render( grid );
+		cells.render( map );
 		SDL_RenderPresent( renderer );
 
 		SDL_Delay(1000);
@@ -91,7 +93,7 @@ int main ( int argc, char** argv )
 				break;
 			}			
 
-			handle_pan_zoom( &env, &grid, event );
+			handle_pan_zoom( &env, &map, event );
 		}		
 
 
@@ -99,12 +101,12 @@ int main ( int argc, char** argv )
 		SDL_RenderClear( renderer );
 
 		SDL_SetRenderDrawColor( renderer, 0xFF, 0xFF, 0xFF, 0xFF );
-		SDL_RenderDrawRect( renderer, &(grid.border_rect) );
+		SDL_RenderDrawRect( renderer, &(map.border_rect) );
 		
 		cells.update();
-		cells.render( grid );
+		cells.render( map );
 
-		//if ( param.grid_shown ) { SDL_DrawSquareGrid( param.population, 0xAAAAAAFF ); }
+		if ( env.grid_shown ) { SDL_DrawGrid( env, map ); }
 
 		SDL_RenderPresent( renderer );
 		SDL_Delay(100);

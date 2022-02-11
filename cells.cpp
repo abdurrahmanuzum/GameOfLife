@@ -118,18 +118,18 @@ int Cells::update()
 }
 
 
-int Cells::render( Gridmap grid )
+int Cells::render( Map map )
 {
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
-	SDL_Rect unit_rect = grid.unit_rect;
+	SDL_Rect unit_rect = map.unit_rect;
 
-	for ( int j = grid.y_index_first; j < grid.y_index_last; j++ )
+	for ( int j = map.y_index_first; j < map.y_index_last; j++ )
 	{
-		for ( int i = grid.x_index_first; i < grid.x_index_last; i++ )
+		for ( int i = map.x_index_first; i < map.x_index_last; i++ )
 		{
-			unit_rect.x = (i - grid.x_index_first) * unit_rect.w;
-			unit_rect.y = (j - grid.y_index_first) * unit_rect.h;
+			unit_rect.x = (i - map.x_index_first) * unit_rect.w;
+			unit_rect.y = (j - map.y_index_first) * unit_rect.h;
 
 			if ( cells[i+1][j+1] == 1 )
 			{
@@ -142,14 +142,14 @@ int Cells::render( Gridmap grid )
 }
 
 
-int Cells::init_by_user( Gridmap grid )
+int Cells::init_by_user( Env env, Map map )
 {//TODO: This probably shouldn't have its own event loop.
 
 	int mouse_x = 0;
 	int mouse_y = 0;
 	bool done = false;
 	SDL_Event event;
-	SDL_Rect unit_rect = grid.unit_rect;
+	SDL_Rect unit_rect = map.unit_rect;
 
 	while ( !done )
 	{
@@ -178,22 +178,23 @@ int Cells::init_by_user( Gridmap grid )
 				//TODO: ADD SINGLE CAPTURE IT REPEATS THE SHIT OUT OF THIS
 				if ( event.button.button == SDL_BUTTON_LEFT ) // Set alive
 				{
-					cells[ 1 + grid.x_index_first + i ][ 1 + grid.y_index_first + j ] = 1;
+					cells[ 1 + map.x_index_first + i ][ 1 + map.y_index_first + j ] = 1;
 
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xff, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
 				}
 				else if ( event.button.button == SDL_BUTTON_RIGHT ) // Set dead
 				{
-					cells[ 1 + grid.x_index_first + i ][ 1 + grid.y_index_first + j ] = 0;
+					cells[ 1 + map.x_index_first + i ][ 1 + map.y_index_first + j ] = 0;
 			
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
-				}
-
-				SDL_RenderPresent( renderer );
+				}				
 			}
 		}
+
+		SDL_DrawGrid( env, map );
+		SDL_RenderPresent( renderer );
 	}
 
 	return 0;

@@ -25,14 +25,15 @@ typedef struct
 	SDL_Rect unit_rect;
 	SDL_Rect border_rect; 
 
-}Gridmap;
+}Map;
 
 typedef struct
 {
-	int  window_w;
-	int  window_h;
-	int  zoom_factor;
-	bool grid_shown;
+	int		window_w;
+	int		window_h;
+	int		zoom_factor;
+	bool	grid_shown;
+	Uint32	grid_color;
 
 	int  population;
 
@@ -44,12 +45,12 @@ typedef struct
 
 }Env;
 
-bool init_SDL( Env* param );
+bool init_SDL( Env env );
 void quit_SDL();
-void get_options( int argc, char** argv, Env* param );
-void handle_pan_zoom( Env* param, Gridmap* grid, SDL_Event& event );
+void get_options( int argc, char** argv, Env* env );
+void handle_pan_zoom( Env* env, Map* map, SDL_Event& event );
 
-//void SDL_DrawSquareGrid( int cell_count, Uint32 color = 0xFFFFFFFF, int start_x = 0, int end_x = WINDOW_WIDTH, int start_y = 0, int end_y );
+void SDL_DrawGrid( Env env, Map map );
 
 
 
