@@ -22,7 +22,11 @@ bool init_SDL()
 		fprintf( stderr, "Software rendering not enabled.\n" );
 	}
 
-	window = SDL_CreateWindow( "Game of Life", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN );
+	window = SDL_CreateWindow( "Game of Life", 
+								SDL_WINDOWPOS_CENTERED, 
+								SDL_WINDOWPOS_CENTERED,
+								WINDOW_WIDTH_DEFAULT, WINDOW_HEIGHT_DEFAULT,
+								SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if ( window == nullptr )
 	{
 		fprintf( stderr, "Failed to initialise window: %s\n", SDL_GetError() );
@@ -55,43 +59,43 @@ void quit_SDL()
 
 
 // TODO: Needs to work with Gridmap
-void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, int start_y, int end_y )
-{
-	double x_dist = (end_x - start_x) / (double)cell_count;
-	double y_dist = (end_y - start_y) / (double)cell_count;
-
-	if ( x_dist <= 0 || y_dist <= 0 ) // Should learn Cpp exceptions sometime.
-	{
-		fprintf( stderr, "ERROR: On function SDL_DrawSquareGrid: Invalid parameters\n" );
-		return;
-	}
-
-	Uint8 a = color & 0xFF;
-
-	color >>= 8;
-	Uint8 b = color & 0xFF;
-
-	color >>= 8;
-	Uint8 g = color & 0xFF;
-
-	color >>= 8;
-	Uint8 r = color & 0xFF;
-
-	SDL_SetRenderDrawColor( renderer, r, g, b, a );
-
-
-
-	for ( double i = start_x; i <= end_x; i += x_dist )
-	{
-		SDL_RenderDrawLine( renderer, i, start_y, i, end_y );
-	}
-
-	for ( double i = start_y; i <= end_y; i += y_dist )
-	{
-		SDL_RenderDrawLine( renderer, start_x, i, end_x, i );
-	}
-
-	SDL_RenderDrawLine( renderer, 0, end_y - 1, WINDOW_WIDTH, end_y - 1 );
-	SDL_RenderDrawLine( renderer, end_x - 1, 0, end_x - 1, WINDOW_HEIGHT );
-
-}
+//void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, int start_y, int end_y )
+//{
+//	double x_dist = (end_x - start_x) / (double)cell_count;
+//	double y_dist = (end_y - start_y) / (double)cell_count;
+//
+//	if ( x_dist <= 0 || y_dist <= 0 ) // Should learn Cpp exceptions sometime.
+//	{
+//		fprintf( stderr, "ERROR: On function SDL_DrawSquareGrid: Invalid parameters\n" );
+//		return;
+//	}
+//
+//	Uint8 a = color & 0xFF;
+//
+//	color >>= 8;
+//	Uint8 b = color & 0xFF;
+//
+//	color >>= 8;
+//	Uint8 g = color & 0xFF;
+//
+//	color >>= 8;
+//	Uint8 r = color & 0xFF;
+//
+//	SDL_SetRenderDrawColor( renderer, r, g, b, a );
+//
+//
+//
+//	for ( double i = start_x; i <= end_x; i += x_dist )
+//	{
+//		SDL_RenderDrawLine( renderer, i, start_y, i, end_y );
+//	}
+//
+//	for ( double i = start_y; i <= end_y; i += y_dist )
+//	{
+//		SDL_RenderDrawLine( renderer, start_x, i, end_x, i );
+//	}
+//
+//	SDL_RenderDrawLine( renderer, 0, end_y - 1, WINDOW_WIDTH, end_y - 1 );
+//	SDL_RenderDrawLine( renderer, end_x - 1, 0, end_x - 1, WINDOW_HEIGHT );
+//
+//}

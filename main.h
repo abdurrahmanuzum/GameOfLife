@@ -13,15 +13,14 @@
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;
 
-extern const int WINDOW_WIDTH;
-extern const int WINDOW_HEIGHT;
+extern const int WINDOW_WIDTH_DEFAULT;
+extern const int WINDOW_HEIGHT_DEFAULT;
 
-extern const int POPULATION;
 
 bool init_SDL();
 void quit_SDL();
 
-void SDL_DrawSquareGrid( int cell_count, Uint32 color = 0xFFFFFFFF, int start_x = 0, int end_x = WINDOW_WIDTH, int start_y = 0, int end_y = WINDOW_HEIGHT );
+//void SDL_DrawSquareGrid( int cell_count, Uint32 color = 0xFFFFFFFF, int start_x = 0, int end_x = WINDOW_WIDTH, int start_y = 0, int end_y );
 
 typedef struct
 {
@@ -30,6 +29,7 @@ typedef struct
 	int y_index_first;
 	int y_index_last;
 	SDL_Rect unit_rect;
+	SDL_Rect border_rect; 
 
 }Gridmap;
 

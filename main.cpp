@@ -2,33 +2,37 @@
 #include "cells.h"
 
 
-#define SCALE_WINDOW_TO_POPULATION
+//#define SCALE_WINDOW_TO_POPULATION
 #define GRID_SHOWN false
 
 #define IMAGE_PATH	 "./gun_50ppc.bmp" //Screen captured from Wikipedia heheh.
 #define IMAGE_PPC	 50 //Pixels per cell on the source image
 #define ACTIVE_COLOR 0  //Alive cell color on the source image, 1 for white, 0 for black
 
+#define BUTTON_PAN SDL_BUTTON_LEFT
+
 
 SDL_Window*	  window   = NULL;
 SDL_Renderer* renderer = NULL;
 
-const int POPULATION = 50;
+int POPULATION = 50;
 
-const int MAX_WINDOW_WIDTH = 700;
-const int MAX_WINDOW_HEIGHT = 700;
+const int WINDOW_WIDTH_DEFAULT  = 500;
+const int WINDOW_HEIGHT_DEFAULT = 500;
+
+const int ZOOM_FACTOR = 4;
 
 
 #ifdef SCALE_WINDOW_TO_POPULATION
 	const int WINDOW_WIDTH	= POPULATION * (MAX_WINDOW_WIDTH/POPULATION);
 	const int WINDOW_HEIGHT = POPULATION * (MAX_WINDOW_HEIGHT/POPULATION);
 #else
-	const int WINDOW_WIDTH	= MAX_WINDOW_WIDTH;
-	const int WINDOW_HEIGHT = MAX_WINDOW_HEIGHT;
+	int WINDOW_WIDTH  = WINDOW_WIDTH_DEFAULT;
+	int WINDOW_HEIGHT = WINDOW_WIDTH_DEFAULT;
 #endif
 
-const int CELL_LENGTH_MIN = WINDOW_WIDTH / POPULATION;
-const int CELL_LENGTH_MAX = WINDOW_WIDTH / 20;
+//INIT_TYPE init_type = INIT_TYPE::IMAGE;
+//char image_path[1000] = { 0 };
 
 
 // Will be carried to another file or a class that deals with display business, wrapping SDL as well
@@ -42,24 +46,28 @@ void handle_pan_zoom( Gridmap* grid, SDL_Event& event )
 	static double diff_x = 0;
 	static double diff_y = 0;
 
-	// Zoom handling
-	if ( event.type == SDL_MOUSEWHEEL ) 
+	// Window resize handling
+	if ( event.window.event == SDL_WINDOWEVENT_RESIZED )
 	{
-		grid->unit_rect.w += event.wheel.y;
-		grid->unit_rect.h += event.wheel.y;
+		WINDOW_WIDTH  = event.window.data1;
+		WINDOW_HEIGHT = event.window.data2;
 
-		if		( grid->unit_rect.w < CELL_LENGTH_MIN ) { grid->unit_rect.w = CELL_LENGTH_MIN; }
-		else if ( grid->unit_rect.w > CELL_LENGTH_MAX ) { grid->unit_rect.w = CELL_LENGTH_MAX; }
-		if		( grid->unit_rect.h < CELL_LENGTH_MIN ) { grid->unit_rect.h = CELL_LENGTH_MIN; }
-		else if ( grid->unit_rect.h > CELL_LENGTH_MAX ) { grid->unit_rect.h = CELL_LENGTH_MAX; }
+		grid->unit_rect.w = WINDOW_WIDTH / ( grid->x_index_last - grid->x_index_first );
+		grid->unit_rect.h = grid->unit_rect.w; // Prioratise width.
+	}
+	// Zoom handling
+	else if ( event.type == SDL_MOUSEWHEEL ) 
+	{
+		grid->unit_rect.w += event.wheel.y * ZOOM_FACTOR;
+		grid->unit_rect.h = grid->unit_rect.w;
 	}
 	// Pan handling
-	else if ( event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_MIDDLE )
+	else if ( event.type == SDL_MOUSEBUTTONDOWN && event.button.button == BUTTON_PAN )
 	{
 		held = true;
 		SDL_GetMouseState( &prev_x, &prev_y );
 	}
-	else if ( event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_MIDDLE )
+	else if ( event.type == SDL_MOUSEBUTTONUP && event.button.button == BUTTON_PAN )
 	{
 		held = false;
 
@@ -88,7 +96,11 @@ void handle_pan_zoom( Gridmap* grid, SDL_Event& event )
 	// ORing the condition with held flag doesn't work and I don't know why.
 	grid->x_index_last = ceil( (double)WINDOW_WIDTH /grid->unit_rect.w + grid->x_index_first );
 	grid->y_index_last = ceil( (double)WINDOW_HEIGHT/grid->unit_rect.h + grid->y_index_first );
+
+	grid->border_rect.w = grid->unit_rect.w * ( grid->x_index_last - grid->x_index_first );
+	grid->border_rect.h = grid->unit_rect.h * ( grid->y_index_last - grid->y_index_first );
 }
+
 
 
 
@@ -105,9 +117,9 @@ int main ( int argc, char** argv )
 
 	// To keep track of pan/zoom setting.
 	SDL_Rect unit_rect = { 0, 0, (WINDOW_WIDTH/POPULATION) , (WINDOW_HEIGHT/POPULATION) };
-	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1, unit_rect };
+	Gridmap grid = { 0, POPULATION-1, 0, POPULATION-1, unit_rect, { 0, 0, 100, 100} };
 
-	INIT_TYPE init_type = INIT_TYPE::IMAGE;
+	
 
 	SDL_Event event;
 	bool quit = false;	
@@ -117,10 +129,11 @@ int main ( int argc, char** argv )
 
 	srand(time(NULL));
 	
-	SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
-	SDL_RenderPresent( renderer );
+	//SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF );
+	//SDL_RenderPresent( renderer );
 
 	// init_type will be passed into the main function in the future as a string
+	INIT_TYPE init_type = INIT_TYPE::IMAGE;
 	switch( init_type )
 	{
 		// All init functions return 0 at success.
@@ -168,18 +181,23 @@ int main ( int argc, char** argv )
 			if ( event.type == SDL_QUIT )
 			{
 				quit = true;
-			}
+				break;
+			}			
 
 			handle_pan_zoom( &grid, event );
 		}		
 
-		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
+
+		SDL_SetRenderDrawColor( renderer, 0xAA, 0x00, 0x00, 0xff );
 		SDL_RenderClear( renderer );
+
+		SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
+		SDL_RenderFillRect( renderer, &(grid.border_rect) );
 		
 		cells.update();
 		cells.render( &grid );
 
-		if ( GRID_SHOWN ) { SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF ); }
+		//if ( GRID_SHOWN ) { SDL_DrawSquareGrid( POPULATION, 0xAAAAAAFF ); }
 
 
 		SDL_RenderPresent( renderer );
