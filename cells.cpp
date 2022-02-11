@@ -4,10 +4,10 @@
 Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+2)
 {
 	allocated = 0;
-	//TODO: Add proper memory allocation failure handling.
 
 	// Allocate main array
 	cells = (unsigned char**)malloc( FRAMED_SIZE*sizeof(*cells) );
+
 	if ( cells == NULL )
 	{
 		fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on cells\n" );
@@ -19,6 +19,7 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 		for ( int i = 0; i < FRAMED_SIZE; i++ )
 		{
 			cells[i] = (unsigned char*)malloc( FRAMED_SIZE*sizeof(**cells) );
+
 			if ( cells[i] == NULL )
 			{
 				fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on columns\n" );
@@ -74,8 +75,7 @@ Cells::~Cells()
 
 
 int Cells::update()
-{
-	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
+{	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
 
 	// Copy initial position to buffers
 	memcpy( prev_col, cells[0], FRAMED_SIZE * sizeof(**cells) );
@@ -103,7 +103,7 @@ int Cells::update()
 			}
 		}
 
-		if ( i+2 >= POPULATION+2 ) //Should be a way around this...
+		if ( i+2 >= POPULATION+2 ) //Should be a better way around this...
 		{
 			break;
 		}
@@ -118,27 +118,18 @@ int Cells::update()
 }
 
 
-int Cells::render( Gridmap* grid )
+int Cells::render( Gridmap grid )
 {
-	// Clamping requested indecies if necessary. Probably should do that on the pan/zoom control instead of here.
-
-	if ( grid->x_index_first < 0 )		    { grid->x_index_first = 0; }	
-	if ( grid->x_index_last  > POPULATION ) { grid->x_index_last  = POPULATION; }
-	if ( grid->y_index_first < 0 )		    { grid->y_index_first = 0; }
-	if ( grid->y_index_last  > POPULATION ) { grid->y_index_last  = POPULATION; }
-
-
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
 
-	// Probably isn't necessary but I don't want to modify grid's unit_rect.
-	SDL_Rect unit_rect = grid->unit_rect;
+	SDL_Rect unit_rect = grid.unit_rect;
 
-	for ( int j = grid->y_index_first; j < grid->y_index_last; j++ )
+	for ( int j = grid.y_index_first; j < grid.y_index_last; j++ )
 	{
-		for ( int i = grid->x_index_first; i < grid->x_index_last; i++ )
+		for ( int i = grid.x_index_first; i < grid.x_index_last; i++ )
 		{
-			unit_rect.x = (i - grid->x_index_first) * unit_rect.w;
-			unit_rect.y = (j - grid->y_index_first) * unit_rect.h;
+			unit_rect.x = (i - grid.x_index_first) * unit_rect.w;
+			unit_rect.y = (j - grid.y_index_first) * unit_rect.h;
 
 			if ( cells[i+1][j+1] == 1 )
 			{
@@ -151,20 +142,14 @@ int Cells::render( Gridmap* grid )
 }
 
 
-//TODO: This probably shouldn't have its own event loop.
-int Cells::init_by_user( Gridmap* grid )
-{
-	// Clamping requested indecies if necessary. Probably should do that on the pan/zoom control instead of here.
-	if ( grid->x_index_first < 0 )		    { grid->x_index_first = 0; }	
-	if ( grid->x_index_last  > POPULATION ) { grid->x_index_last  = POPULATION; }
-	if ( grid->y_index_first < 0 )		    { grid->y_index_first = 0; }
-	if ( grid->y_index_last  > POPULATION ) { grid->y_index_last  = POPULATION; }
+int Cells::init_by_user( Gridmap grid )
+{//TODO: This probably shouldn't have its own event loop.
 
 	int mouse_x = 0;
 	int mouse_y = 0;
 	bool done = false;
 	SDL_Event event;
-	SDL_Rect unit_rect = grid->unit_rect;
+	SDL_Rect unit_rect = grid.unit_rect;
 
 	while ( !done )
 	{
@@ -193,14 +178,14 @@ int Cells::init_by_user( Gridmap* grid )
 				//TODO: ADD SINGLE CAPTURE IT REPEATS THE SHIT OUT OF THIS
 				if ( event.button.button == SDL_BUTTON_LEFT ) // Set alive
 				{
-					cells[ 1 + grid->x_index_first + i ][ 1 + grid->y_index_first + j ] = 1;
+					cells[ 1 + grid.x_index_first + i ][ 1 + grid.y_index_first + j ] = 1;
 
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0xff, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
 				}
 				else if ( event.button.button == SDL_BUTTON_RIGHT ) // Set dead
 				{
-					cells[ 1 + grid->x_index_first + i ][ 1 + grid->y_index_first + j ] = 0;
+					cells[ 1 + grid.x_index_first + i ][ 1 + grid.y_index_first + j ] = 0;
 			
 					SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xff );
 					SDL_RenderFillRect( renderer, &unit_rect );
@@ -252,7 +237,7 @@ int Cells::init_by_imag( const char* path, int cell_length, int active_color )
 		}
 	}
 
-	// Turns out you don't free( an SDL surface pointer ) ...
+	// Turns out you don't free( an SDL surface pointer ) yourself ... 
 	SDL_FreeSurface( image_surface );
 	image_surface = NULL;
 
