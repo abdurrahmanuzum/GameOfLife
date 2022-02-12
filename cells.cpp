@@ -128,8 +128,8 @@ int Cells::render( Map map )
 	{
 		for ( int i = map.x_index_first; i < map.x_index_last; i++ )
 		{
-			unit_rect.x = (i - map.x_index_first) * unit_rect.w;
-			unit_rect.y = (j - map.y_index_first) * unit_rect.h;
+			unit_rect.x = i * unit_rect.w + map.unit_rect.x;
+			unit_rect.y = j * unit_rect.h + map.unit_rect.y;
 
 			if ( cells[i+1][j+1] == 1 )
 			{
