@@ -8,7 +8,7 @@ int main ( int argc, char** argv )
 
 	Env env = { 500,						//Window width
 				500,						//Wýndow height
-				4,							//Zoom factor
+				2,							//Zoom factor
 				false,						//Show grid
 				0xAAAAAAFF,					//Grid color
 				50,							//Population (2500)
@@ -73,9 +73,12 @@ int main ( int argc, char** argv )
 		cells.render( map );
 		SDL_RenderPresent( renderer );
 
-		SDL_Delay(1000);
-
-		system("pause");
+		// Ignores user trying to x-out of the program but whatever...
+		for( ;; )
+		{
+			SDL_PollEvent( &event );
+			if ( event.type == SDL_KEYDOWN ) { break; }
+		}
 	}
 
 

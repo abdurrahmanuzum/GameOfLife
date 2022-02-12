@@ -58,50 +58,6 @@ void quit_SDL()
 }
 
 
-// TODO: Needs to work with Gridmap
-//void SDL_DrawSquareGrid( int cell_count, Uint32 color, int start_x, int end_x, int start_y, int end_y )
-//{
-//	double x_dist = (end_x - start_x) / (double)cell_count;
-//	double y_dist = (end_y - start_y) / (double)cell_count;
-//
-//	if ( x_dist <= 0 || y_dist <= 0 ) // Should learn Cpp exceptions sometime.
-//	{
-//		fprintf( stderr, "ERROR: On function SDL_DrawSquareGrid: Invalid parameters\n" );
-//		return;
-//	}
-//
-//	Uint8 a = color & 0xFF;
-//
-//	color >>= 8;
-//	Uint8 b = color & 0xFF;
-//
-//	color >>= 8;
-//	Uint8 g = color & 0xFF;
-//
-//	color >>= 8;
-//	Uint8 r = color & 0xFF;
-//
-//	SDL_SetRenderDrawColor( renderer, r, g, b, a );
-//
-//
-//
-//	for ( double i = start_x; i <= end_x; i += x_dist )
-//	{
-//		SDL_RenderDrawLine( renderer, i, start_y, i, end_y );
-//	}
-//
-//	for ( double i = start_y; i <= end_y; i += y_dist )
-//	{
-//		SDL_RenderDrawLine( renderer, start_x, i, end_x, i );
-//	}
-//
-//	SDL_RenderDrawLine( renderer, 0, end_y - 1, WINDOW_WIDTH, end_y - 1 );
-//	SDL_RenderDrawLine( renderer, end_x - 1, 0, end_x - 1, WINDOW_HEIGHT );
-//
-//}
-
-
-
 void get_options( int argc, char** argv, Env* env )
 {
 	bool img_defined = false;
@@ -192,7 +148,7 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			else
 			{
-				fprintf( stderr, "--color flag takes one of \"white\", \"black\" options, %s isn't recognised.\n" );
+				fprintf( stderr, "--color flag takes one of \"white\", \"black\" options, %s isn't recognised.\n", argv[i+1] );
 				exit(EXIT_FAILURE);
 			}
 
@@ -279,8 +235,21 @@ void handle_pan_zoom( Env* env, Map* map, SDL_Event& event )
 	// Zoom handling
 	else if ( event.type == SDL_MOUSEWHEEL ) 
 	{
-		map->unit_rect.w += event.wheel.y * env->zoom_factor;
+		map->unit_rect.w *= pow( 2, event.wheel.y );
 		map->unit_rect.h  = map->unit_rect.w;
+		
+		SDL_GetMouseState( &curr_x, &curr_y );
+
+		if ( event.wheel.y > 0 )
+		{
+			map->unit_rect.x = 2*map->unit_rect.x - curr_x;
+			map->unit_rect.y = 2*map->unit_rect.y - curr_y;
+		}
+		else
+		{
+			map->unit_rect.x = curr_x - 0.5*(curr_x - map->unit_rect.x);
+			map->unit_rect.y = curr_y - 0.5*(curr_y - map->unit_rect.y);
+		}
 
 		update = true;
 	}
@@ -302,8 +271,8 @@ void handle_pan_zoom( Env* env, Map* map, SDL_Event& event )
 	{
 		SDL_GetMouseState( &curr_x, &curr_y );
 
-		map->unit_rect.x -= curr_x - prev_x;
-		map->unit_rect.y -= curr_y - prev_y;
+		map->unit_rect.x += ( curr_x - prev_x );
+		map->unit_rect.y += ( curr_y - prev_y );
 
 		prev_x = curr_x;
 		prev_y = curr_y;
@@ -315,13 +284,13 @@ void handle_pan_zoom( Env* env, Map* map, SDL_Event& event )
 	{
 		// Clamp pan tracker
 
-		if ( map->unit_rect.x < 0 ) { map->unit_rect.x = 0; }
-		if ( map->unit_rect.y < 0 ) { map->unit_rect.y = 0; }
+		if ( map->unit_rect.w < 1 ) { map->unit_rect.w = 1; }
+		if ( map->unit_rect.h < 1 ) { map->unit_rect.h = 1; }
 
 		// Update indecies
 
-		map->x_index_first = map->unit_rect.x/map->unit_rect.w;
-		map->y_index_first = map->unit_rect.y/map->unit_rect.h;
+		map->x_index_first = floor( -1.0 * map->unit_rect.x / map->unit_rect.w );
+		map->y_index_first = floor( -1.0 * map->unit_rect.y / map->unit_rect.h );
 
 		map->x_index_last  = map->x_index_first + ceil( (double)env->window_w / map->unit_rect.w );
 		map->y_index_last  = map->y_index_first + ceil( (double)env->window_h / map->unit_rect.h );
@@ -335,12 +304,12 @@ void handle_pan_zoom( Env* env, Map* map, SDL_Event& event )
 
 		// Update border rectangle
 
-		map->border_rect.w = map->unit_rect.w * ( map->x_index_last - map->x_index_first );
-		map->border_rect.h = map->unit_rect.h * ( map->y_index_last - map->y_index_first );
-
+		map->border_rect.x = map->unit_rect.x;
+		map->border_rect.y = map->unit_rect.y;
+		map->border_rect.w = map->unit_rect.w * map->x_index_last;
+		map->border_rect.h = map->unit_rect.h * map->y_index_last;
 	}
 }
-
 
 // Will generalise this
 void SDL_DrawGrid( Env env, Map map )
