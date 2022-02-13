@@ -97,14 +97,14 @@ void get_options( int argc, char** argv, Env* env )
 	for ( int i = 1; i < argc; i++ )
 	{
 		//-----------------------------------------Population-----------------------------------------------//
-		if ( strncmp( argv[i], "-p", 2 ) == 0 )
+		if ( strcmp( argv[i], "-p" ) == 0 && strlen(argv[i]) == 2 )
 		{
 			env->population = strtoul( argv[i+1], NULL, 10 );
 			printf( "Population is set to %d\n", env->population );
 			i++;
 		}
 		//-----------------------------------------Image Path-----------------------------------------------//
-		else if ( strncmp( argv[i], "--path", 6 ) == 0 )
+		else if ( strcmp( argv[i], "--path" ) == 0 && strlen(argv[i]) == 6 )
 		{
 			img_defined = true;
 			img_param++;
@@ -126,7 +126,7 @@ void get_options( int argc, char** argv, Env* env )
 			i++;
 		}
 		//-----------------------------------------Image ppc------------------------------------------------//
-		else if ( strncmp( argv[i], "-ppc", 4 ) == 0 )
+		else if ( strcmp( argv[i], "-ppc" ) == 0 && strlen(argv[i]) == 4 )
 		{
 			img_defined = true;
 			img_param++;
@@ -134,28 +134,28 @@ void get_options( int argc, char** argv, Env* env )
 			i++;
 		}
 		//------------------------------------------Image Color---------------------------------------------//
-		else if ( strncmp( argv[i], "--color", 7 ) == 0 )
+		else if ( strcmp( argv[i], "--color" ) == 0 && strlen(argv[i]) == 7 )
 		{
 			img_defined = true;
 			img_param++;
-			if ( strncmp( argv[i+1], "white", 5 ) == 0 )
+			if ( strcmp( argv[i+1], "white" ) == 0 )
 			{
 				env->image_alive_color = 1;
 			}
-			else if ( strncmp( argv[i+1], "black", 5 ) == 0 )
+			else if ( strcmp( argv[i+1], "black" ) == 0 )
 			{
 				env->image_alive_color = 0;
 			}
 			else
 			{
-				fprintf( stderr, "--color flag takes one of \"white\", \"black\" options, %s isn't recognised.\n", argv[i+1] );
+				fprintf( stderr, "--color flag takes one of \"white\", \"black\" options, <%s> isn't recognised.\n", argv[i+1] );
 				exit(EXIT_FAILURE);
 			}
 
 			i++;
 		}
 		//-------------------------------------------Init Type-----------------------------------------------//
-		else if ( strncmp( argv[i], "-i", 2 ) == 0 )
+		else if ( strcmp( argv[i], "-i" ) == 0 && strlen(argv[i]) == 2 )
 		{
 			if ( strncmp( argv[i+1], "man", 3 ) == 0 && !img_defined ) 
 			{
@@ -165,8 +165,9 @@ void get_options( int argc, char** argv, Env* env )
 			{ 
 				env->init_type = INIT_TYPE::RANDOM; printf("Selected random.\n"); 
 			}
-			else if( strncmp( argv[i+1], "im" , 2 ) == 0 ) 
+			else if( strncmp( argv[i+1], "im", 2 ) == 0 ) 
 			{ 
+				img_defined = true;
 				env->init_type = INIT_TYPE::IMAGE; printf("Selected image.\n"); 
 			}
 			else if ( img_defined )
@@ -181,13 +182,13 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			i++;
 		}
-		else if ( strncmp( argv[i], "--grid", 6 ) == 0 )
+		else if ( strcmp( argv[i], "--grid" ) == 0 && strlen(argv[i]) == 6 )
 		{
-			if ( strncmp( argv[i+1], "shown", 5 ) == 0 )
+			if ( strcmp( argv[i+1], "shown" ) == 0 )
 			{
 				env->grid_shown = true;
 			}
-			else if ( strncmp( argv[i+1], "hidden", 6 ) == 0 )
+			else if ( strcmp( argv[i+1], "hidden" ) == 0 )
 			{
 				env->grid_shown = false;
 			}
