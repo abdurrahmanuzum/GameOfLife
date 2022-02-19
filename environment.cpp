@@ -8,19 +8,15 @@ bool init_SDL( Env env )
 {
 	if ( SDL_Init( SDL_INIT_VIDEO ) < 0 )
 	{
-		fprintf( stderr, "Failed to initialise SDL: %s\n", SDL_GetError() );
+		fprintf( stderr, "Error in %s() : Failed to initialise SDL: %s\n", __FUNCTION__,  SDL_GetError() );
 		return false;
 	}
 
-	if ( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
-	{
-		fprintf( stderr, "WARNING: I don't know why this matters.\n" );
-	}
+	SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" );
 
-	if ( !SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software") )
-	{
-		fprintf( stderr, "Software rendering not enabled.\n" );
-	}
+	
+	//SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+	
 
 	window = SDL_CreateWindow( "Game of Life", 
 								SDL_WINDOWPOS_CENTERED, 
@@ -29,14 +25,14 @@ bool init_SDL( Env env )
 								SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE );
 	if ( window == nullptr )
 	{
-		fprintf( stderr, "Failed to initialise window: %s\n", SDL_GetError() );
+		fprintf( stderr, "Error in %s() : Failed to create window: %s\n", __FUNCTION__, SDL_GetError() );
 		return false;
 	}
 
 	renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
 	if ( renderer == nullptr )
 	{
-		fprintf( stderr, "Failed to create renderer: %s\n", SDL_GetError() );
+		fprintf( stderr, "Error in %s() : Failed to create renderer: %s\n", __FUNCTION__, SDL_GetError() );
 		return false;
 	}
 
@@ -119,7 +115,7 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			else
 			{
-				fprintf( stderr, "Failed to locate file %s\n", env->image_path );
+				fprintf( stderr, "Error in %s() : Failed to locate file <%s>\n", __FUNCTION__, env->image_path );
 				exit(EXIT_FAILURE);
 			}
 
@@ -148,7 +144,7 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			else
 			{
-				fprintf( stderr, "--color flag takes one of \"white\", \"black\" options, <%s> isn't recognised.\n", argv[i+1] );
+				fprintf( stderr, "Error in %s() : --color flag takes one of \"white\", \"black\" options, <%s> isn't recognised.\n", __FUNCTION__, argv[i+1] );
 				exit(EXIT_FAILURE);
 			}
 
@@ -172,12 +168,12 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			else if ( img_defined )
 			{
-				fprintf( stderr, "Conflicting options detected.\n" );
+				fprintf( stderr, "Error in %s() : Conflicting options detected.\n", __FUNCTION__ );
 				exit(EXIT_FAILURE);
 			}
 			else
 			{
-				fprintf( stderr, "-i flag takes one of \"manual\", \"random\", \"image\" arguments. %s isn't recognised.\n", argv[i+1] );
+				fprintf( stderr, "Error in %s() : -i flag takes one of \"manual\", \"random\", \"image\" arguments. %s isn't recognised.\n", __FUNCTION__, argv[i+1] );
 				exit(EXIT_FAILURE);
 			}
 			i++;
@@ -194,14 +190,14 @@ void get_options( int argc, char** argv, Env* env )
 			}
 			else
 			{
-				fprintf( stderr, "--grid flag takes one of \"shown\", \"hidden\" arguments. %s isn't recognised.\n", argv[i+1] );
+				fprintf( stderr, "Error in %s() : --grid flag takes one of \"shown\", \"hidden\" arguments. %s isn't recognised.\n", __FUNCTION__, argv[i+1] );
 				exit(EXIT_FAILURE);
 			}
 			i++;
 		}
 		else
 		{
-			fprintf( stderr, "%s isn't recognised as a valid command or argument.\n", argv[i] );
+			fprintf( stderr, "Error in %s() : <%s> isn't recognised as a valid command or argument.\n", __FUNCTION__, argv[i] );
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -210,7 +206,7 @@ void get_options( int argc, char** argv, Env* env )
 	// Image initialisation requires 3 parameters.
 	if ( img_defined && img_param < 3 )
 	{
-		fprintf( stderr, "Not enough arguments provided for initialising with an image.\n" );
+		fprintf( stderr, "Error in %s() : Not enough arguments provided for initialising with an image.\n", __FUNCTION__ );
 		exit(EXIT_FAILURE);
 	}
 }

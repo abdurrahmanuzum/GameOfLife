@@ -10,7 +10,7 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 
 	if ( cells == NULL )
 	{
-		fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on cells\n" );
+		fprintf( stderr, "Error in %s() : Failed to allocate memory on cells\n", __FUNCTION__ );
 		allocated = -1;
 	}
 	else
@@ -22,7 +22,7 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 
 			if ( cells[i] == NULL )
 			{
-				fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on columns\n" );
+				fprintf( stderr, "Error in %s() : Failed to allocate memory on columns\n", __FUNCTION__ );
 				allocated = -2;
 			}
 		}
@@ -45,7 +45,7 @@ Cells::Cells( int population ) : POPULATION(population), FRAMED_SIZE(population+
 			
 			if ( prev_col == NULL ||curr_col == NULL || next_col == NULL )
 			{
-				fprintf( stderr, "ERROR On function Cells::Cells Failed to allocate memory on buffers\n" );
+				fprintf( stderr, "Error in %s() : Failed to allocate memory on buffers\n", __FUNCTION__ );
 				allocated = -3;
 			}
 		}
@@ -117,7 +117,7 @@ int Cells::update()
 	return 0;
 }
 
-
+// Doesn't support cells smaller than 1 pixel, will be completely changed.
 int Cells::render( Map map )
 {
 	SDL_SetRenderDrawColor( renderer, 0xff, 0xff, 0xff, 0xff );
@@ -208,17 +208,17 @@ int Cells::init_by_imag( const char* path, int cell_length, int active_color )
 	SDL_Surface* image_surface = SDL_LoadBMP( path );
 	if ( image_surface == NULL )
 	{
-		fprintf( stderr, "ERROR: On function Cells::init_by_imag Failed to load image: %s\n", SDL_GetError() );
+		fprintf( stderr, "Error in %s() : Failed to load image: %s\n", __FUNCTION__, SDL_GetError() );
 		return -1;
 	}
 	else if ( image_surface->format->BytesPerPixel != 1 )
 	{
-		fprintf( stderr, "ERROR: On function Cells::init_by_imag Only accepting monochrome bmp images. bkz->Paint, her þeyi devletten bekleme...\n" );
+		fprintf( stderr, "Error in %s() : Only accepting monochrome bmp images.\n", __FUNCTION__ );
 		return -1;
 	}
 	else if ( image_surface->h / cell_length >= POPULATION  ||  image_surface->w / cell_length >= POPULATION )
 	{
-		fprintf( stderr, "WARNING: On function Cells::init_by_imag <%s> contains too much information and will be truncated.\n", path );
+		fprintf( stderr, "Warning in %s() : <%s> contains too much information and will be truncated.\n", __FUNCTION__, path );
 	}
 
 	// Iterate through selected pixels and write to the cells. Exits if the end of image or cells array is encountered.
