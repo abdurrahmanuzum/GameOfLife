@@ -74,6 +74,19 @@ Cells::~Cells()
 }
 
 
+/*
+* What if, instead of holding each cell as a byte, hold the surrounding 8 cells in one byte instead?
+*				0 1 2
+*				3 i 4	==> i = 0b(01234567)
+*				5 6 7
+* 
+* sure it would have redundancy over the neighbouring edges, but still would occupy less space.
+* It also would allow use of direct bitwise operations in determining whether a cell is alive or dead.
+* 
+* Do a benchark on this...
+*	
+*/
+
 int Cells::update()
 {	//TODO: Optimise for partial updating, don't iterate the regions that are guaranteed to remain unchanged for the next clock
 
